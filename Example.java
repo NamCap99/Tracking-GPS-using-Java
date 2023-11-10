@@ -1,6 +1,8 @@
-// import nz.sodium.*;
-
 import java.util.stream.Stream;
+
+import nz.sodium.*;
+
+// import java.util.stream.Stream;
 
 /** 
  * An example of how to use the GpsService class
