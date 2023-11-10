@@ -24,9 +24,13 @@ public class GpsService {
      * Retrieves the streams of GPS Events
      * @return An array containing several streams of GPS events.
      */
+    // @SuppressWarnings("unchecked")
+    //  public Stream<GpsEvent>[] getEventStreams(){
+    //     return ((Stream<GpsEvent>[])this.streams.toArray(new Stream[0]));
+    // }
     @SuppressWarnings("unchecked")
-     public Stream<GpsEvent>[] getEventStreams(){
-        return ((Stream<GpsEvent>[])this.streams.toArray(new Stream[0]));
+    public nz.sodium.Stream<GpsEvent>[] getEventStreams() {
+        return streams.toArray(new nz.sodium.Stream[0]); // Change to Sodium's Stream
     }
 
     /**
