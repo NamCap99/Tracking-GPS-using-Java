@@ -3,8 +3,7 @@ import javax.swing.*;
 import javax.swing.SwingUtilities;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class SLabel extends JLabel
-{
+public class SLabel extends JLabel{
     public SLabel(Cell<String> text) {
         super("");
         l = Operational.updates(text).listen(t -> {
