@@ -30,7 +30,7 @@ public class GpsService {
     // }
     @SuppressWarnings("unchecked")
     public nz.sodium.Stream<GpsEvent>[] getEventStreams() {
-        return streams.toArray(new nz.sodium.Stream[0]); // Change to Sodium's Stream
+        return streams.toArray(new nz.sodium.Stream[0]); // Explicitly return an array of Sodium's Stream
     }
 
     /**
