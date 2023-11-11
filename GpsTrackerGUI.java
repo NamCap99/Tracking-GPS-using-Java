@@ -2,13 +2,17 @@ import nz.sodium.*;
 import swidgets.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
 public class GpsTrackerGUI {
+    private static Map<String, JLabel> trackerLabels = new HashMap<>();
+    private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
+
 
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
@@ -46,9 +50,10 @@ public class GpsTrackerGUI {
 
     private static Stream<GpsEvent> combineAllTrackerStreams() {
         StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
-        Timer timer = new Timer(true);  // true to make it a daemon thread
+        Timer timer = new Timer(true); // true to make it a daemon thread
         timer.schedule(new TimerTask() {
             int counter = 0;
+
             public void run() {
                 // Simulating a new event for a different tracker
                 String trackerId = "Tracker " + (counter % 10 + 1);
@@ -59,7 +64,17 @@ public class GpsTrackerGUI {
         }, 0, 1000); // Emit an event every second
         return allEventsSink;
     }
-    
+
+    // Assuming you have a method to update a tracker's label
+    private static void updateTrackerLabel(String trackerId, String data) {
+        // Retrieve the label for the tracker and update its text
+        JLabel label = trackerLabels.get(trackerId); // trackerLabels is a Map<String, JLabel>
+        if (label != null) {
+            label.setText(data);
+        }
+    }
+
+    // Call this method whenever a tracker's data is updated
 
     private static Cell<GpsEvent> simulateTrackerData(String trackerId) {
         Random rand = new Random();
@@ -171,4 +186,30 @@ public class GpsTrackerGUI {
         // Implement logic to convert stream data to string for display
         return new Cell<>("");
     }
+
+    private static double calculateDistance(GpsEvent lastEvent, GpsEvent currentEvent) {
+        // Simplified distance calculation; replace with a more accurate method if needed
+        double latDistance = Math.toRadians(currentEvent.getLatitude() - lastEvent.getLatitude());
+        double lonDistance = Math.toRadians(currentEvent.getLongitude() - lastEvent.getLongitude());
+    
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude()))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+        return 6371000 * c; // Earth's radius in meters * angular distance in radians
+    }
+
+    // Example of processing a new GPS event
+    public static void processGpsEvent(GpsEvent newEvent) {
+    String trackerId = newEvent.getTrackerId();
+    if (lastKnownPositions.containsKey(trackerId)) {
+        GpsEvent lastEvent = lastKnownPositions.get(trackerId);
+        double distance = calculateDistance(lastEvent, newEvent);
+        // Now, do something with this distance - e.g., update a total distance, display it, etc.
+    }
+    lastKnownPositions.put(trackerId, newEvent); // Update the last known position
+}
+
+    
 }
