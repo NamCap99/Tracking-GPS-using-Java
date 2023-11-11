@@ -14,7 +14,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GpsGUI {
-    private static Map<String, JLabel> trackerLabels = new HashMap<>();
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
@@ -22,7 +21,7 @@ public class GpsGUI {
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
     // Initialize event display label in static context
-    private static JLabel eventDisplayLabel = new JLabel("No data");
+    // private static JLabel eventDisplayLabel = new JLabel("No data");
 
     // Assuming you have a class GpsEvent with the required methods
     public static class GpsEvent {
@@ -70,15 +69,6 @@ public class GpsGUI {
             }
         }, 0, 1000); // Emit an event every second
         return allEventsSink;
-    }
-
-    // // Assuming you have a method to update a tracker's label
-    private static void updateTrackerLabel(String trackerId, String data) {
-        // Retrieve the label for the tracker and update its text
-        JLabel label = trackerLabels.get(trackerId); // trackerLabels is a Map<String, JLabel>
-        if (label != null) {
-            label.setText(data);
-        }
     }
 
     public static double dmsToDecimal(int degrees, int minutes, double seconds, boolean isNegative) {
@@ -138,16 +128,11 @@ public class GpsGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        // Initialize event display label and add to frame
-        JLabel eventDisplayLabel = new JLabel("No data");
-        frame.add(eventDisplayLabel, BorderLayout.PAGE_START);
-
         // Panel for tracker data
         JPanel trackerPanel = new JPanel(new GridLayout(0, 1));
         trackerPanel.setBorder(BorderFactory.createTitledBorder("Trackers"));
         frame.add(trackerPanel, BorderLayout.NORTH);
 
-        // Simulate and display data for multiple trackers
         // Simulate and display data for multiple trackers
         int numberOfTrackers = 10; // Example number of trackers
         // Inside createAndShowGUI method
@@ -167,11 +152,6 @@ public class GpsGUI {
             trackerDistanceLabels.put(trackerId, distanceLabel);
             trackerPanel.add(distanceLabel); // Add the distance label to the panel
         }
-
-        // Simulate tracker data
-        Cell<String> trackerData = new Cell<>("Tracker 1: 0.0, 0.0, 0.0"); // Example tracker data
-        SLabel trackerLabel = new SLabel(trackerData);
-        trackerPanel.add(trackerLabel);
 
         // Input panel for latitude and longitude
         JPanel inputPanel = new JPanel(new FlowLayout());
@@ -195,6 +175,7 @@ public class GpsGUI {
         inputPanel.add(filterStatusLabel);
 
         // Apply filter logic on button click
+        // Apply filter logic on button click
         applyButton.sClicked.listen(ignored -> {
             String latStr = latitudeField.text.sample().trim();
             String lonStr = longitudeField.text.sample().trim();
@@ -207,20 +188,29 @@ public class GpsGUI {
                     throw new IllegalArgumentException(
                             "Latitude must be between -90 and 90 and longitude between -180 and 180.");
                 }
+
+                // If the input is valid, update the filter status label and apply the filter
                 filterStatusLabel.setText("Current filter: Lat " + lat + ", Lon " + lon);
 
+                // Filter the stream for events within the specified latitude and longitude
                 Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
                 Stream<GpsEvent> filteredStream = allEventsStream
                         .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
                                 Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
 
+                // Update the combined data display with the filtered data
                 filteredStream
                         .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon "
                                 + event.getLongitude())
                         .hold("No data")
                         .listen(filteredData -> combinedDataDisplay.setText(filteredData));
-            } catch (IllegalArgumentException e) {
+            } catch (NumberFormatException e) {
+                // If parsing the double fails, show an error message
                 JOptionPane.showMessageDialog(frame, "Invalid input for latitude or longitude.");
+                filterStatusLabel.setText("Current filter: Invalid");
+            } catch (IllegalArgumentException e) {
+                // If the input values are out of range, show an error message
+                JOptionPane.showMessageDialog(frame, e.getMessage());
                 filterStatusLabel.setText("Current filter: Invalid");
             }
         });
@@ -228,18 +218,6 @@ public class GpsGUI {
         frame.pack();
         frame.setSize(600, 600);
         frame.setVisible(true);
-    }
-
-    // Add a method to update this label
-    private static void updateEventDisplay(String data) {
-        eventDisplayLabel.setText(data);
-        // Set up a timer to clear the label after 3 seconds
-        new Timer().schedule(new TimerTask() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(() -> eventDisplayLabel.setText("No data"));
-            }
-        }, 3000);
     }
 
     private static void simulateTestCases() {
@@ -289,21 +267,21 @@ public class GpsGUI {
 
     private static double calculateDistance(GpsEvent lastEvent, GpsEvent currentEvent) {
         final int R = 6371; // Radius of the Earth in kilometers
-    
+
         double latDistance = Math.toRadians(currentEvent.getLatitude() - lastEvent.getLatitude());
         double lonDistance = Math.toRadians(currentEvent.getLongitude() - lastEvent.getLongitude());
-        
+
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
-                   Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude())) *
-                   Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+                Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude()))
+                        *
+                        Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
         double distance = R * c; // convert to meters
         distance *= 1000; // convert to meters
-    
+
         return Math.round(distance);
     }
-    
 
     // Example of processing a new GPS event
     public static void processGpsEvent(GpsEvent newEvent) {
