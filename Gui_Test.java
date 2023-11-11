@@ -61,9 +61,9 @@ public class Gui_Test {
         GpsEvent event2 = new GpsEvent("Tracker1", 50.001, 10.001, 100.0);
 
         // Send the events separated by a time window
-        // GpsGUI.getTrackerStream("Tracker1").send(event1);
+        GpsGUI.getTrackerStream("Tracker1").send(event1);
         // ... wait for 3 minutes ...
-        // GpsGUI.getTrackerStream("Tracker1").send(event2);
+        GpsGUI.getTrackerStream("Tracker1").send(event2);
 
         // Check if the distance calculation is correct
         double expectedDistance = GpsGUI.calculateDistance(event1, event2);
