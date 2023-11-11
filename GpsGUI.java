@@ -21,7 +21,6 @@ public class GpsGUI {
 
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
-    private static JLabel eventDisplayLabel;
     // Initialize event display label in static context
     private static JLabel eventDisplayLabel = new JLabel("No data");
 
@@ -281,9 +280,13 @@ public class GpsGUI {
     private static void setupPeriodicTasks() {
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleAtFixedRate(() -> {
-            trackerDistances.keySet().forEach(GpsGUI::updateTrackerDistanceDisplay);
-        }, 0, 5, TimeUnit.MINUTES);
+            // For each tracker, update its distance display
+            trackerDistances.forEach((trackerId, distance) -> {
+                updateTrackerDistanceDisplay(trackerId, distance);
+            });
+        }, 0, 5, TimeUnit.MINUTES); // Schedules the task to run every 5 minutes
     }
+    
 
     // Placeholder method to get filtered GPS event stream
     private static Stream<GpsEvent> getFilteredGpsEventStream(double latitude, double longitude) {
