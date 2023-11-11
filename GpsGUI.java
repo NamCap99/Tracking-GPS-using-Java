@@ -288,26 +288,28 @@ public class GpsGUI {
     }
 
     private static double calculateDistance(GpsEvent lastEvent, GpsEvent currentEvent) {
-        // Simplified distance calculation; replace with a more accurate method if
-        // needed
+        final int R = 6371; // Radius of the Earth in kilometers
+    
         double latDistance = Math.toRadians(currentEvent.getLatitude() - lastEvent.getLatitude());
         double lonDistance = Math.toRadians(currentEvent.getLongitude() - lastEvent.getLongitude());
-
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lastEvent.getLatitude()))
-                        * Math.cos(Math.toRadians(currentEvent.getLatitude()))
-                        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
+                   Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude())) *
+                   Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return 6371000 * c; // Earth's radius in meters * angular distance in radians
+    
+        double distance = R * c; // convert to meters
+        distance *= 1000; // convert to meters
+    
+        return Math.round(distance);
     }
+    
 
     // Example of processing a new GPS event
     public static void processGpsEvent(GpsEvent newEvent) {
         SwingUtilities.invokeLater(() -> {
             String trackerId = newEvent.getTrackerId();
             double newDistance = 0.0;
-            // Inside the processGpsEvent method
             // Inside the processGpsEvent method
             if (lastKnownPositions.containsKey(trackerId)) {
                 GpsEvent lastEvent = lastKnownPositions.get(trackerId);

@@ -1,15 +1,12 @@
 JCC = javac
+JFLAGS = -g
+# when CLASSPATH = /path/to/sodium/library/sodium.jar:.; /path/to/sodium/library/swidgets.jar:.
+CLASSPATH = "C:\\Users\\kxeam\\Downloads\\Compressed\\W09\\sodium.jar;C:\\Users\\kxeam\\Downloads\\Compressed\\W09\\swidgets.jar;."
 
-# This will create .class files for all .java files found in the current directory
 default: all
 
-all:
-    $(JCC) *.java
+all: 
+	$(JCC) $(JFLAGS) -cp $(CLASSPATH) *.java
 
-# This will clean up all .class files so you can start fresh
-clean:
-    $(RM) *.class
-
-# This target is for running your main GPS GUI application
-run: all
-    java GpsGUI
+clean: 
+	$(RM) *.class
