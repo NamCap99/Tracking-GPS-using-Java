@@ -2,6 +2,7 @@ import nz.sodium.*;
 import swidgets.*;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -120,7 +121,10 @@ public class GpsGUI {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> createAndShowGUI());
+        SwingUtilities.invokeLater(() -> {
+            createAndShowGUI();
+            simulateTestCases();
+        });
     }
 
     private static void createAndShowGUI() {
@@ -205,15 +209,40 @@ public class GpsGUI {
         frame.setVisible(true);
     }
 
-    public static void testSimulateTrackerData() {
-        for (int i = 0; i < 100; i++) {
-            GpsEvent event = simulateTrackerData("TestTracker").sample();
-            assert event.getLatitude() >= -90 && event.getLatitude() <= 90 : "Latitude out of range";
-            assert event.getLongitude() >= -180 && event.getLongitude() <= 180 : "Longitude out of range";
+    private static void simulateTestCases() {
+        // Test cases (latitude, longitude)
+        double[][] testCases = {
+                { 0.0, 0.0 }, // Equator and Prime Meridian
+                { 90.0, 0.0 }, // North Pole
+                { -90.0, 0.0 }, // South Pole
+                { 0.0, 180.0 }, // International Date Line, Equator
+                { 51.477928, -0.001545 }, // Greenwich Observatory
+                { 38.897676, -77.036530 }, // The White House, Washington D.C.
+                { 48.858844, 2.294351 }, // Eiffel Tower, Paris
+                { 35.689487, 139.691706 }, // Tokyo, Japan
+                { -22.906847, -43.172896 }, // Rio de Janeiro, Brazil
+                { 55.755826, 37.617300 } // Moscow, Russia
+        };
+
+        for (double[] testCase : testCases) {
+            String trackerId = "TestTracker";
+            double latitude = testCase[0];
+            double longitude = testCase[1];
+            double altitude = 0; // Assume sea level for testing
+
+            // Simulate a delay between receiving each event
+            Timer timer = new Timer(true);
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    // Create a new GPS event with the test data
+                    GpsEvent testEvent = new GpsEvent(trackerId, latitude, longitude, altitude);
+                    // Process the event as if it were received from the GPS service
+                    processGpsEvent(testEvent);
+                }
+            }, 1000 * Arrays.asList(testCases).indexOf(testCase)); // Delays for each test case
         }
-        System.out.println("simulateTrackerData passed all tests.");
     }
-    
 
     // Placeholder method to get filtered GPS event stream
     private static Stream<GpsEvent> getFilteredGpsEventStream(double latitude, double longitude) {
