@@ -11,8 +11,9 @@ import java.util.TimerTask;
 
 public class GpsTrackerGUI {
     private static Map<String, JLabel> trackerLabels = new HashMap<>();
+    private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
-
+    private static Map<String, Double> trackerDistances = new HashMap<>();
 
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
@@ -113,14 +114,20 @@ public class GpsTrackerGUI {
         int numberOfTrackers = 10; // Example number of trackers
         // Inside createAndShowGUI method
         for (int i = 0; i < numberOfTrackers; i++) {
-            Cell<GpsEvent> trackerData = simulateTrackerData("Tracker " + (i + 1));
+            String trackerId = "Tracker " + (i + 1);
+            Cell<GpsEvent> trackerData = simulateTrackerData(trackerId);
 
             // Map the GpsEvent data to a String format, excluding altitude
             Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
                     + event.getLatitude() + ", Lon " + event.getLongitude());
 
             SLabel trackerLabel = new SLabel(displayData);
-            trackerPanel.add(trackerLabel);
+            trackerPanel.add(trackerLabel); 
+
+            // Create a label for displaying distance and add it to the map
+            JLabel distanceLabel = new JLabel(trackerId + ": Distance 0 meters");
+            trackerDistanceLabels.put(trackerId, distanceLabel);
+            trackerPanel.add(distanceLabel); // Add the distance label to the panel
         }
 
         // Simulate tracker data
@@ -144,34 +151,34 @@ public class GpsTrackerGUI {
         STextArea combinedDataDisplay = new STextArea("");
         frame.add(combinedDataDisplay, BorderLayout.SOUTH);
 
-        // Apply filter logic on button click
+        JLabel filterStatusLabel = new JLabel("Current filter: None");
+        inputPanel.add(filterStatusLabel);
 
+        // Apply filter logic on button click
         applyButton.sClicked.listen(ignored -> {
             try {
                 double lat = Double.parseDouble(latitudeField.text.sample());
                 double lon = Double.parseDouble(longitudeField.text.sample());
-
+                filterStatusLabel.setText("Current filter: Lat " + lat + ", Lon " + lon);
+        
                 Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
-
-                // Filter the stream based on the input latitude and longitude
                 Stream<GpsEvent> filteredStream = allEventsStream
-                        .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
-                                Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
-
-                // Display the filtered data
+                    .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
+                                     Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
+        
                 filteredStream
-                        .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon "
-                                + event.getLongitude())
-                        .hold("No data")
-                        .listen(filteredData -> {
-                            combinedDataDisplay.setText(filteredData);
-                        });
+                    .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon " + event.getLongitude())
+                    .hold("No data")
+                    .listen(filteredData -> combinedDataDisplay.setText(filteredData));
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(frame, "Invalid input for latitude or longitude.");
+                filterStatusLabel.setText("Current filter: Invalid");
             }
         });
+        
 
         frame.pack();
+        frame.setSize(500, 400);
         frame.setVisible(true);
     }
 
@@ -188,28 +195,45 @@ public class GpsTrackerGUI {
     }
 
     private static double calculateDistance(GpsEvent lastEvent, GpsEvent currentEvent) {
-        // Simplified distance calculation; replace with a more accurate method if needed
+        // Simplified distance calculation; replace with a more accurate method if
+        // needed
         double latDistance = Math.toRadians(currentEvent.getLatitude() - lastEvent.getLatitude());
         double lonDistance = Math.toRadians(currentEvent.getLongitude() - lastEvent.getLongitude());
-    
+
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude()))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+                + Math.cos(Math.toRadians(lastEvent.getLatitude()))
+                        * Math.cos(Math.toRadians(currentEvent.getLatitude()))
+                        * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
         return 6371000 * c; // Earth's radius in meters * angular distance in radians
     }
 
     // Example of processing a new GPS event
     public static void processGpsEvent(GpsEvent newEvent) {
-    String trackerId = newEvent.getTrackerId();
-    if (lastKnownPositions.containsKey(trackerId)) {
-        GpsEvent lastEvent = lastKnownPositions.get(trackerId);
-        double distance = calculateDistance(lastEvent, newEvent);
-        // Now, do something with this distance - e.g., update a total distance, display it, etc.
-    }
-    lastKnownPositions.put(trackerId, newEvent); // Update the last known position
-}
-
+        String trackerId = newEvent.getTrackerId();
+        double newDistance = 0.0;
+        if (lastKnownPositions.containsKey(trackerId)) {
+            GpsEvent lastEvent = lastKnownPositions.get(trackerId);
+            newDistance = calculateDistance(lastEvent, newEvent);
+        }
+        lastKnownPositions.put(trackerId, newEvent); // Update the last known position
     
+        // Update the total distance
+        trackerDistances.put(trackerId, trackerDistances.getOrDefault(trackerId, 0.0) + newDistance);
+        updateTrackerDistanceDisplay(trackerId);
+    }
+    
+    private static void updateTrackerDistanceDisplay(String trackerId) {
+        Double distance = trackerDistances.get(trackerId);
+        if (distance != null) {
+            String distanceStr = String.format("Tracker %s: Total Distance: %.2f meters", trackerId, distance);
+            // Assuming you have a method to get a distance label for each tracker
+            JLabel distanceLabel = trackerDistanceLabels.get(trackerId);
+            if (distanceLabel != null) {
+                distanceLabel.setText(distanceStr);
+            }
+        }
+    }
+
 }

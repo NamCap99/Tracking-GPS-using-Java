@@ -15,8 +15,7 @@ public class Example {
         // Initialise the GPS Service
         GpsService serv = new GpsService();
         // Retrieve Event Streams
-        Stream<GpsEvent>[] streams = serv.getEventStreams();
-
+        nz.sodium.Stream<GpsEvent>[] streams = (nz.sodium.Stream<GpsEvent>[]) serv.getEventStreams();
         // Attach a handler method to each stream
         for(Stream<GpsEvent> s : streams){
             s.listen((GpsEvent ev) -> System.out.println(ev));
