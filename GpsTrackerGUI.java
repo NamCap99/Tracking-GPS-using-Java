@@ -27,25 +27,25 @@ public class GpsTrackerGUI {
     }
 
     
-    private static Cell<String> simulateTrackerData(String trackerId) {
-        // Simulate GPS data for a tracker (latitude, longitude, altitude)
+    private static Cell<GpsEvent> simulateTrackerData(String trackerId) {
         Random rand = new Random();
-        double latitude = -90 + 180 * rand.nextDouble();  // Random latitude
-        double longitude = -180 + 360 * rand.nextDouble(); // Random longitude
+    
+        // Generate latitude and longitude with 8 decimal places
+        double latitude = -90 + 180 * rand.nextDouble();  // Range: -90 to 90
+        latitude = Math.round(latitude * 1e8) / 1e8;      // Round to 8 decimal places
+    
+        double longitude = -180 + 360 * rand.nextDouble(); // Range: -180 to 180
+        longitude = Math.round(longitude * 1e8) / 1e8;    // Round to 8 decimal places
+    
         double altitude = 1000 * rand.nextDouble(); // Random altitude
     
-        // Create a GpsEvent and format it as a string
         GpsEvent event = new GpsEvent(trackerId, latitude, longitude, altitude);
-        String dataString = "Tracker " + event.getTrackerId() +
-                            ": Lat " + event.getLatitude() +
-                            ", Lon " + event.getLongitude() +
-                            ", Alt " + event.getAltitude();
     
-        // Create a CellSink and immediately send the data string to it
-        CellSink<String> trackerDataCell = new CellSink<>(dataString);
-    
+        // Create a CellSink and set its value to the generated event
+        CellSink<GpsEvent> trackerDataCell = new CellSink<>(event);
         return trackerDataCell;
     }
+    
     
 
     public static void main(String[] args) {
@@ -62,12 +62,22 @@ public class GpsTrackerGUI {
         frame.add(trackerPanel, BorderLayout.NORTH);
 
         // Simulate and display data for multiple trackers
-        int numberOfTrackers = 5; // Example number of trackers
-        for (int i = 0; i < numberOfTrackers; i++) {
-            Cell<String> trackerData = simulateTrackerData("Tracker " + (i + 1));
-            SLabel trackerLabel = new SLabel(trackerData);
-            trackerPanel.add(trackerLabel);
-        }
+// Simulate and display data for multiple trackers
+int numberOfTrackers = 10; // Example number of trackers
+// Inside createAndShowGUI method
+for (int i = 0; i < numberOfTrackers; i++) {
+    Cell<GpsEvent> trackerData = simulateTrackerData("Tracker " + (i + 1));
+
+    // Map the GpsEvent data to a String format, excluding altitude
+    Cell<String> displayData = trackerData.map(event ->
+        "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon " + event.getLongitude()
+    );
+
+    SLabel trackerLabel = new SLabel(displayData);
+    trackerPanel.add(trackerLabel);
+}
+
+
 
         // Simulate tracker data
         Cell<String> trackerData = new Cell<>("Tracker 1: 0.0, 0.0, 0.0"); // Example tracker data
@@ -118,4 +128,29 @@ public class GpsTrackerGUI {
         // Implement logic to convert stream data to string for display
         return new Cell<>("");
     }
+
+    // ... [Previous code]
+
+// Apply filter logic on button click
+// applyButton.sClicked.listen(ignored -> {
+//     try {
+//         double lat = Double.parseDouble(latitudeField.text.sample());
+//         double lon = Double.parseDouble(longitudeField.text.sample());
+
+//         // Validate the latitude and longitude values
+//         if (isValidLatitude(lat) && isValidLongitude(lon)) {
+//             Stream<GpsEvent> filteredStream = getFilteredGpsEventStream(lat, lon);
+//             Cell<String> displayData = getDisplayDataFromStream(filteredStream);
+//             combinedDataDisplay.setText(displayData.sample());  // Update display
+//         } else {
+//             // Handle invalid input values
+//             JOptionPane.showMessageDialog(frame, "Invalid latitude or longitude values.");
+//         }
+//     } catch (NumberFormatException e) {
+//         // Handle parsing errors
+//         JOptionPane.showMessageDialog(frame, "Error in parsing latitude or longitude.");
+//     }
+// });
+
+
 }
