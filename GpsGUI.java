@@ -230,7 +230,7 @@ public class GpsGUI {
         frame.setVisible(true);
     }
 
-    // // Add a method to update this label
+    // Add a method to update this label
     private static void updateEventDisplay(String data) {
         eventDisplayLabel.setText(data);
         // Set up a timer to clear the label after 3 seconds
@@ -337,54 +337,5 @@ public class GpsGUI {
                 distanceLabel.setText(distanceStr);
             }
         });
-    }
-
-    // Assuming you have a method isWithinRange that checks if the event is within
-    // the provided latitude and longitude
-    private static boolean isWithinRange(GpsEvent event, double lat, double lon) {
-        return Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
-                Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD;
-    }
-
-    // This method creates a stream that updates when latitude or longitude fields
-    // change
-    private static Stream<GpsEvent> createCombinedStream(STextField latitudeField, STextField longitudeField,
-            Stream<GpsEvent> allEventsStream) {
-        // Create a stream that combines latitude and longitude updates into a LatLong
-        // object
-        Stream<LatLong> latLongStream = latitudeField.text.updates().snapshot(longitudeField.text, (latStr, lonStr) -> {
-            try {
-                double lat = Double.parseDouble(latStr);
-                double lon = Double.parseDouble(lonStr);
-                return new LatLong(lat, lon);
-            } catch (NumberFormatException e) {
-                return null; // Or handle the error as appropriate
-            }
-        });
-
-        // Listen for updates on the combined latitude and longitude stream
-        // and filter the allEventsStream accordingly
-        return latLongStream.filter(ll -> ll != null)
-                .flatMap(ll -> allEventsStream
-                        .filter(event -> isWithinRange(event, ll.getLatitude(), ll.getLongitude())));
-    }
-
-    // A helper class to hold latitude and longitude together
-    private static class LatLong {
-        private final double latitude;
-        private final double longitude;
-
-        public LatLong(double latitude, double longitude) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-
-        public double getLatitude() {
-            return latitude;
-        }
-
-        public double getLongitude() {
-            return longitude;
-        }
     }
 }
