@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 import nz.sodium.*;
-import java.util.stream.Stream;
 
 /**
  * Simulates live GPS data by playing back records from the Geolife data set.
