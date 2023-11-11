@@ -9,7 +9,7 @@ import java.util.TimerTask;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class GpsTrackerGUI {
+public class GpsGUI {
     private static Map<String, JLabel> trackerLabels = new HashMap<>();
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
@@ -178,7 +178,7 @@ public class GpsTrackerGUI {
         
 
         frame.pack();
-        frame.setSize(500, 400);
+        frame.setSize(600, 600);
         frame.setVisible(true);
     }
 
