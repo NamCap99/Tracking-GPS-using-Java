@@ -3,8 +3,15 @@ import swidgets.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Random;
+import java.util.TimerTask;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 public class GpsTrackerGUI {
+
+    private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
+    private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
 
     // Assuming you have a class GpsEvent with the required methods
     public static class GpsEvent {
@@ -20,33 +27,58 @@ public class GpsTrackerGUI {
             this.altitude = altitude;
         }
 
-        public String getTrackerId() { return trackerId; }
-        public double getLatitude() { return latitude; }
-        public double getLongitude() { return longitude; }
-        public double getAltitude() { return altitude; }
+        public String getTrackerId() {
+            return trackerId;
+        }
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public double getAltitude() {
+            return altitude;
+        }
     }
 
+    private static Stream<GpsEvent> combineAllTrackerStreams() {
+        StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
+        Timer timer = new Timer(true);  // true to make it a daemon thread
+        timer.schedule(new TimerTask() {
+            int counter = 0;
+            public void run() {
+                // Simulating a new event for a different tracker
+                String trackerId = "Tracker " + (counter % 10 + 1);
+                Cell<GpsEvent> simulatedData = simulateTrackerData(trackerId);
+                allEventsSink.send(simulatedData.sample());
+                counter++;
+            }
+        }, 0, 1000); // Emit an event every second
+        return allEventsSink;
+    }
     
+
     private static Cell<GpsEvent> simulateTrackerData(String trackerId) {
         Random rand = new Random();
-    
+
         // Generate latitude and longitude with 8 decimal places
-        double latitude = -90 + 180 * rand.nextDouble();  // Range: -90 to 90
-        latitude = Math.round(latitude * 1e8) / 1e8;      // Round to 8 decimal places
-    
+        double latitude = -90 + 180 * rand.nextDouble(); // Range: -90 to 90
+        latitude = Math.round(latitude * 1e8) / 1e8; // Round to 8 decimal places
+
         double longitude = -180 + 360 * rand.nextDouble(); // Range: -180 to 180
-        longitude = Math.round(longitude * 1e8) / 1e8;    // Round to 8 decimal places
-    
+        longitude = Math.round(longitude * 1e8) / 1e8; // Round to 8 decimal places
+
         double altitude = 1000 * rand.nextDouble(); // Random altitude
-    
+
         GpsEvent event = new GpsEvent(trackerId, latitude, longitude, altitude);
-    
+
         // Create a CellSink and set its value to the generated event
         CellSink<GpsEvent> trackerDataCell = new CellSink<>(event);
         return trackerDataCell;
     }
-    
-    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> createAndShowGUI());
@@ -62,22 +94,19 @@ public class GpsTrackerGUI {
         frame.add(trackerPanel, BorderLayout.NORTH);
 
         // Simulate and display data for multiple trackers
-// Simulate and display data for multiple trackers
-int numberOfTrackers = 10; // Example number of trackers
-// Inside createAndShowGUI method
-for (int i = 0; i < numberOfTrackers; i++) {
-    Cell<GpsEvent> trackerData = simulateTrackerData("Tracker " + (i + 1));
+        // Simulate and display data for multiple trackers
+        int numberOfTrackers = 10; // Example number of trackers
+        // Inside createAndShowGUI method
+        for (int i = 0; i < numberOfTrackers; i++) {
+            Cell<GpsEvent> trackerData = simulateTrackerData("Tracker " + (i + 1));
 
-    // Map the GpsEvent data to a String format, excluding altitude
-    Cell<String> displayData = trackerData.map(event ->
-        "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon " + event.getLongitude()
-    );
+            // Map the GpsEvent data to a String format, excluding altitude
+            Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
+                    + event.getLatitude() + ", Lon " + event.getLongitude());
 
-    SLabel trackerLabel = new SLabel(displayData);
-    trackerPanel.add(trackerLabel);
-}
-
-
+            SLabel trackerLabel = new SLabel(displayData);
+            trackerPanel.add(trackerLabel);
+        }
 
         // Simulate tracker data
         Cell<String> trackerData = new Cell<>("Tracker 1: 0.0, 0.0, 0.0"); // Example tracker data
@@ -101,16 +130,30 @@ for (int i = 0; i < numberOfTrackers; i++) {
         frame.add(combinedDataDisplay, BorderLayout.SOUTH);
 
         // Apply filter logic on button click
+
         applyButton.sClicked.listen(ignored -> {
-            double lat = Double.parseDouble(latitudeField.text.sample());
-            double lon = Double.parseDouble(longitudeField.text.sample());
+            try {
+                double lat = Double.parseDouble(latitudeField.text.sample());
+                double lon = Double.parseDouble(longitudeField.text.sample());
 
-            // Filter logic (assuming a method to get GPS event stream)
-            // Stream<GpsEvent> filteredStream = getFilteredGpsEventStream(lat, lon);
+                Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
 
-            // Update display (assuming a method to format GPS event data)
-            // Cell<String> displayData = getDisplayDataFromStream(filteredStream);
-            // combinedDataDisplay.setText(displayData.sample());
+                // Filter the stream based on the input latitude and longitude
+                Stream<GpsEvent> filteredStream = allEventsStream
+                        .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
+                                Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
+
+                // Display the filtered data
+                filteredStream
+                        .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon "
+                                + event.getLongitude())
+                        .hold("No data")
+                        .listen(filteredData -> {
+                            combinedDataDisplay.setText(filteredData);
+                        });
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(frame, "Invalid input for latitude or longitude.");
+            }
         });
 
         frame.pack();
@@ -128,29 +171,4 @@ for (int i = 0; i < numberOfTrackers; i++) {
         // Implement logic to convert stream data to string for display
         return new Cell<>("");
     }
-
-    // ... [Previous code]
-
-// Apply filter logic on button click
-// applyButton.sClicked.listen(ignored -> {
-//     try {
-//         double lat = Double.parseDouble(latitudeField.text.sample());
-//         double lon = Double.parseDouble(longitudeField.text.sample());
-
-//         // Validate the latitude and longitude values
-//         if (isValidLatitude(lat) && isValidLongitude(lon)) {
-//             Stream<GpsEvent> filteredStream = getFilteredGpsEventStream(lat, lon);
-//             Cell<String> displayData = getDisplayDataFromStream(filteredStream);
-//             combinedDataDisplay.setText(displayData.sample());  // Update display
-//         } else {
-//             // Handle invalid input values
-//             JOptionPane.showMessageDialog(frame, "Invalid latitude or longitude values.");
-//         }
-//     } catch (NumberFormatException e) {
-//         // Handle parsing errors
-//         JOptionPane.showMessageDialog(frame, "Error in parsing latitude or longitude.");
-//     }
-// });
-
-
 }
