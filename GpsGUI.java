@@ -75,6 +75,29 @@ public class GpsGUI {
         }
     }
 
+    public static double dmsToDecimal(int degrees, int minutes, double seconds, boolean isNegative) {
+        // Convert DMS to decimal degrees
+        double decimalDegrees = degrees + minutes / 60.0 + seconds / 3600.0;
+
+        // Round to 8 decimal places
+        decimalDegrees = Math.round(decimalDegrees * 1e8) / 1e8;
+
+        // Apply negative sign for South latitudes and West longitudes
+        if (isNegative) {
+            decimalDegrees = -decimalDegrees;
+        }
+
+        return decimalDegrees;
+    }
+
+    public static double feetToMeters(double feet) {
+        // Conversion factor from feet to meters
+        final double conversionFactor = 0.3048;
+
+        // Convert feet to meters and round to the nearest millimeter
+        return Math.round(feet * conversionFactor * 1000) / 1000.0;
+    }
+
     // Call this method whenever a tracker's data is updated
 
     private static Cell<GpsEvent> simulateTrackerData(String trackerId) {
@@ -122,7 +145,7 @@ public class GpsGUI {
                     + event.getLatitude() + ", Lon " + event.getLongitude());
 
             SLabel trackerLabel = new SLabel(displayData);
-            trackerPanel.add(trackerLabel); 
+            trackerPanel.add(trackerLabel);
 
             // Create a label for displaying distance and add it to the map
             JLabel distanceLabel = new JLabel(trackerId + ": Distance 0 meters");
@@ -160,27 +183,37 @@ public class GpsGUI {
                 double lat = Double.parseDouble(latitudeField.text.sample());
                 double lon = Double.parseDouble(longitudeField.text.sample());
                 filterStatusLabel.setText("Current filter: Lat " + lat + ", Lon " + lon);
-        
+
                 Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
                 Stream<GpsEvent> filteredStream = allEventsStream
-                    .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
-                                     Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
-        
+                        .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
+                                Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
+
                 filteredStream
-                    .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon " + event.getLongitude())
-                    .hold("No data")
-                    .listen(filteredData -> combinedDataDisplay.setText(filteredData));
+                        .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon "
+                                + event.getLongitude())
+                        .hold("No data")
+                        .listen(filteredData -> combinedDataDisplay.setText(filteredData));
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(frame, "Invalid input for latitude or longitude.");
                 filterStatusLabel.setText("Current filter: Invalid");
             }
         });
-        
 
         frame.pack();
         frame.setSize(600, 600);
         frame.setVisible(true);
     }
+
+    public static void testSimulateTrackerData() {
+        for (int i = 0; i < 100; i++) {
+            GpsEvent event = simulateTrackerData("TestTracker").sample();
+            assert event.getLatitude() >= -90 && event.getLatitude() <= 90 : "Latitude out of range";
+            assert event.getLongitude() >= -180 && event.getLongitude() <= 180 : "Longitude out of range";
+        }
+        System.out.println("simulateTrackerData passed all tests.");
+    }
+    
 
     // Placeholder method to get filtered GPS event stream
     private static Stream<GpsEvent> getFilteredGpsEventStream(double latitude, double longitude) {
@@ -211,19 +244,21 @@ public class GpsGUI {
 
     // Example of processing a new GPS event
     public static void processGpsEvent(GpsEvent newEvent) {
-        String trackerId = newEvent.getTrackerId();
-        double newDistance = 0.0;
-        if (lastKnownPositions.containsKey(trackerId)) {
-            GpsEvent lastEvent = lastKnownPositions.get(trackerId);
-            newDistance = calculateDistance(lastEvent, newEvent);
-        }
-        lastKnownPositions.put(trackerId, newEvent); // Update the last known position
-    
-        // Update the total distance
-        trackerDistances.put(trackerId, trackerDistances.getOrDefault(trackerId, 0.0) + newDistance);
-        updateTrackerDistanceDisplay(trackerId);
+        SwingUtilities.invokeLater(() -> {
+            String trackerId = newEvent.getTrackerId();
+            double newDistance = 0.0;
+            if (lastKnownPositions.containsKey(trackerId)) {
+                GpsEvent lastEvent = lastKnownPositions.get(trackerId);
+                newDistance = calculateDistance(lastEvent, newEvent);
+            }
+            lastKnownPositions.put(trackerId, newEvent); // Update the last known position
+
+            // Update the total distance
+            trackerDistances.put(trackerId, trackerDistances.getOrDefault(trackerId, 0.0) + newDistance);
+            updateTrackerDistanceDisplay(trackerId);
+        });
     }
-    
+
     private static void updateTrackerDistanceDisplay(String trackerId) {
         Double distance = trackerDistances.get(trackerId);
         if (distance != null) {
@@ -235,5 +270,4 @@ public class GpsGUI {
             }
         }
     }
-
 }
