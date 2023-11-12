@@ -29,8 +29,8 @@ public class GpsGUI {
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
 
-     // Assuming you have a class GpsEvent with the required methods
-     protected static class GpsEvent {
+    // Assuming you have a class GpsEvent with the required methods
+    protected static class GpsEvent {
         private final String trackerId;
         private final double latitude;
         private final double longitude;
@@ -146,16 +146,12 @@ public class GpsGUI {
     }
 
     public static void main(String[] args) {
-        if (!isTestMode) {
-            SwingUtilities.invokeLater(() -> {
-                GpsGUI gpsGUI = new GpsGUI(); // Create the GUI object
-                gpsGUI.showGUI(); // Show the GUI
-                createAndShowGUI(); // Assemble the GUI components
-                setupTrackerStreams(); // Set up the FRP streams for the trackers
-                setupPeriodicTasks(); // Set up any periodic tasks or timers
-                showGUI(); // Make the GUI visible
-            });
-        }
+        SwingUtilities.invokeLater(() -> {
+            GpsGUI gpsGUI = new GpsGUI(); // Create the GUI object and initialize components
+            gpsGUI.showGUI(); // Show the GUI if not in test mode
+            setupTrackerStreams(); // Set up the FRP streams for the trackers
+            setupPeriodicTasks(); // Set up any periodic tasks or timers
+        });
     }
 
     // Constructor
@@ -179,9 +175,9 @@ public class GpsGUI {
         frame.pack();
         frame.setSize(600, 600);
     }
-    
+
     // Call this method from outside the constructor to show the GUI
-    public static void showGUI() {
+    private void showGUI() {
         if (!isTestMode) {
             frame.setVisible(true);
         }
