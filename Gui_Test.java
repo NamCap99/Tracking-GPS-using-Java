@@ -22,15 +22,16 @@ public class Gui_Test {
 
     @Before
     public void setUp() {
+        GpsGUI.setTestMode(true);
         gpsGUI = new GpsGUI();
-        gpsGUI.initializeComponents(); // Initializes components for testing
+        gpsGUI.initializeComponents();
     }
 
     @Test
     public void testDistanceCalculationAndUpdate() {
         String trackerId = "Tracker1";
-        GpsEvent startEvent = new GpsEvent(trackerId, 50.0, 10.0, 100.0);
-        GpsEvent endEvent = new GpsEvent(trackerId, 50.001, 10.001, 100.0);
+        GpsGUI.GpsEvent startEvent = new GpsGUI.GpsEvent(trackerId, 50.0, 10.0, 100.0);
+        GpsGUI.GpsEvent endEvent = new GpsGUI.GpsEvent(trackerId, 50.001, 10.001, 100.0);
 
         // Call the method to calculate the distance between two events.
         double distance = GpsGUI.calculateDistance(startEvent, endEvent);
@@ -64,7 +65,7 @@ public class Gui_Test {
             assertEquals("Initial text should show 0 meters", trackerId + ": Distance 0 meters",
                     initialLabel.getText());
 
-            GpsEvent simulatedEvent = new GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
+            GpsGUI.GpsEvent simulatedEvent = new GpsGUI.GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
             SwingUtilities.invokeAndWait(() -> gpsGUI.processGpsEvent(simulatedEvent));
 
             JLabel updatedLabel = gpsGUI.getTrackerLabel(trackerId);
@@ -89,7 +90,7 @@ public class Gui_Test {
         for (int i = 1; i <= 10; i++) {
             String trackerId = "Tracker" + i;
             // Directly create a GpsEvent with deterministic data.
-            GpsEvent simulatedEvent = new GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
+            GpsGUI.GpsEvent simulatedEvent = new GpsGUI.GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
 
             // Invoke the method that updates the GUI with the simulated event.
             // This method needs to be implemented in GpsGUI.
