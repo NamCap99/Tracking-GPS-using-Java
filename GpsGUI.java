@@ -40,6 +40,11 @@ public class GpsGUI {
         isTestMode = testMode;
     }
 
+    public static void processNewData(String trackerId, double lat, double lon, double alt) {
+        GpsEvent newEvent = new GpsEvent(trackerId, lat, lon, alt);
+        processNewGpsEvent(newEvent); // Assuming this method handles the new event
+    }
+
     // Assuming you have a class GpsEvent with the required methods
     // public static class GpsEvent {
     // public final String trackerId;
@@ -376,28 +381,6 @@ public class GpsGUI {
             }
         });
     }
-
-    // Method to update the GUI display for a tracker based on a GpsEvent.
-    // public static void updateTrackerDisplay(Cell<GpsEvent> trackerDataCell) {
-    // // Here you would actually listen to the cell changes and update the GUI.
-    // // For now, let's just get the current value and update a label as an
-    // example.
-    // GpsEvent event = trackerDataCell.sample(); // Get the current event from the
-    // cell.
-
-    // // Assume you have a method to get a label by tracker ID.
-    // JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
-    // if (trackerLabel != null) {
-    // // Update the text of the label with new event data.
-    // String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f, Alt %.2f
-    // meters",
-    // event.getTrackerId(),
-    // event.getLatitude(),
-    // event.getLongitude(),
-    // event.getAltitude());
-    // trackerLabel.setText(labelText);
-    // }
-    // }
 
     public static void processNewGpsEvent(GpsEvent newEvent) {
         StreamSink<GpsEvent> streamSink = trackerStreams.get(newEvent.getTrackerId());
