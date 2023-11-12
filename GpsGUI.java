@@ -318,4 +318,27 @@ public class GpsGUI {
             }
         });
     }
+
+    public void initializeStreams() {
+    }
+
+    // Method to initialize components for testing
+    public void initializeComponents() {
+        // Initialize components, can be left empty if constructor already does this
+    }
+
+    // Method to clean up after tests
+    public void cleanup() {
+        // Dispose of the frame
+        if (frame != null) {
+            SwingUtilities.invokeLater(() -> {
+                frame.dispose();
+            });
+        }
+    }
+
+    // Getter for tracker labels if needed for tests
+    public JLabel getTrackerLabel(String trackerId) {
+        return trackerDistanceLabels.get(trackerId);
+    }
 }
