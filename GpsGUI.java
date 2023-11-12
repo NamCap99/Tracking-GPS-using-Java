@@ -360,4 +360,5 @@ public class GpsGUI {
     public static JLabel getTrackerLabel(String trackerId) {
         return trackerDistanceLabels.get(trackerId);
     }
+
 }

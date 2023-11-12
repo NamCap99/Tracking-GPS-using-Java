@@ -6,8 +6,8 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/kxeam/OneDrive - AUT University/Desktop/EDC_A3/sodium.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kxeam/OneDrive - AUT University/Desktop/EDC_A3/swidgets.jar"/>
-	<classpathentry kind="lib" path="C:/Users/kxeam/OneDrive - AUT University/Desktop/EDC_A3/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kxeam/Downloads/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kxeam/Downloads/Compressed/W09/sodium.jar"/>
+	<classpathentry kind="lib" path="C:/Users/kxeam/Downloads/Compressed/W09/swidgets.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
