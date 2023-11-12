@@ -17,7 +17,7 @@ public class GpsGUI {
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
-
+    private static JFrame frame;
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
     // Initialize event display label in static context
@@ -124,7 +124,7 @@ public class GpsGUI {
     }
 
     private static void createAndShowGUI() {
-        JFrame frame = new JFrame("GPS Tracker");
+        frame = new JFrame("GPS Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -328,12 +328,10 @@ public class GpsGUI {
     }
 
     // Method to clean up after tests
-    public void cleanup() {
+    public static void cleanup() {
         // Dispose of the frame
         if (frame != null) {
-            SwingUtilities.invokeLater(() -> {
-                frame.dispose();
-            });
+            frame.dispose();
         }
     }
 
