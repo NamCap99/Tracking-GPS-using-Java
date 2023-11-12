@@ -20,6 +20,12 @@ public class GpsGUI {
     private static JFrame frame;
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
+
+    private static final int numberOfTrackers = 10; // Example number of trackers
+    private static JPanel trackerPanel;
+    private static JPanel inputPanel;
+    private static STextArea combinedDataDisplay;
+    private static JLabel filterStatusLabel;
     // Initialize event display label in static context
     // private static JLabel eventDisplayLabel = new JLabel("No data");
 
@@ -128,53 +134,74 @@ public class GpsGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        // Panel for tracker data
-        JPanel trackerPanel = new JPanel(new GridLayout(0, 1));
-        trackerPanel.setBorder(BorderFactory.createTitledBorder("Trackers"));
-        frame.add(trackerPanel, BorderLayout.NORTH);
+        trackerPanel = createTrackerPanel();
+        inputPanel = createInputPanel();
+        combinedDataDisplay = createCombinedDataDisplay();
 
-        // Simulate and display data for multiple trackers
-        int numberOfTrackers = 10; // Example number of trackers
-        // Inside createAndShowGUI method
+        frame.add(trackerPanel, BorderLayout.NORTH);
+        frame.add(inputPanel, BorderLayout.CENTER);
+        frame.add(combinedDataDisplay, BorderLayout.SOUTH);
+
+        frame.pack();
+        frame.setSize(600, 600);
+        frame.setVisible(true);
+    }
+
+    private static JPanel createTrackerPanel() {
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(BorderFactory.createTitledBorder("Trackers"));
+
         for (int i = 0; i < numberOfTrackers; i++) {
             String trackerId = "Tracker " + (i + 1);
             Cell<GpsEvent> trackerData = simulateTrackerData(trackerId);
-
-            // Map the GpsEvent data to a String format, excluding altitude
-            Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
-                    + event.getLatitude() + ", Lon " + event.getLongitude());
-
-            SLabel trackerLabel = new SLabel(displayData);
-            trackerPanel.add(trackerLabel);
-
-            // Create a label for displaying distance and add it to the map
-            JLabel distanceLabel = new JLabel(trackerId + ": Distance 0 meters");
-            trackerDistanceLabels.put(trackerId, distanceLabel);
-            trackerPanel.add(distanceLabel); // Add the distance label to the panel
+            panel.add(createTrackerLabel(trackerData));
+            panel.add(createDistanceLabel(trackerId));
         }
+        return panel;
+    }
 
-        // Input panel for latitude and longitude
-        JPanel inputPanel = new JPanel(new FlowLayout());
-        inputPanel.setBorder(BorderFactory.createTitledBorder("Filter Controls"));
+    private static SLabel createTrackerLabel(Cell<GpsEvent> trackerData) {
+        Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
+                + event.getLatitude() + ", Lon " + event.getLongitude());
+        return new SLabel(displayData);
+    }
+
+    private static JLabel createDistanceLabel(String trackerId) {
+        JLabel distanceLabel = new JLabel(trackerId + ": Distance 0 meters");
+        trackerDistanceLabels.put(trackerId, distanceLabel);
+        return distanceLabel;
+    }
+
+    private static JPanel createInputPanel() {
+        JPanel panel = new JPanel(new FlowLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Filter Controls"));
+
         STextField latitudeField = new STextField("Latitude");
         STextField longitudeField = new STextField("Longitude");
         SButton applyButton = new SButton("Apply Filter");
-        inputPanel.add(new JLabel("Latitude:"));
-        inputPanel.add(latitudeField);
-        inputPanel.add(new JLabel("Longitude:"));
-        inputPanel.add(longitudeField);
-        inputPanel.add(applyButton);
-        frame.add(inputPanel, BorderLayout.CENTER);
 
-        // Display for combined GPS data
-        STextArea combinedDataDisplay = new STextArea("");
-        combinedDataDisplay.setBorder(BorderFactory.createTitledBorder("Combined Data"));
-        frame.add(combinedDataDisplay, BorderLayout.SOUTH);
+        panel.add(new JLabel("Latitude:"));
+        panel.add(latitudeField);
+        panel.add(new JLabel("Longitude:"));
+        panel.add(longitudeField);
+        panel.add(applyButton);
 
-        JLabel filterStatusLabel = new JLabel("Current filter: None");
-        inputPanel.add(filterStatusLabel);
+        filterStatusLabel = new JLabel("Current filter: None");
+        panel.add(filterStatusLabel);
 
-        // Apply filter logic on button click
+        setupFilterButtonListener(latitudeField, longitudeField, applyButton, filterStatusLabel);
+
+        return panel;
+    }
+
+    private static STextArea createCombinedDataDisplay() {
+        STextArea display = new STextArea("");
+        display.setBorder(BorderFactory.createTitledBorder("Combined Data"));
+        return display;
+    }
+
+    private static void setupFilterButtonListener(STextField latitudeField, STextField longitudeField,
+            SButton applyButton, JLabel statusLabel) {
         // Apply filter logic on button click
         applyButton.sClicked.listen(ignored -> {
             String latStr = latitudeField.text.sample().trim();
@@ -185,8 +212,10 @@ public class GpsGUI {
 
                 // Validate latitude and longitude values
                 if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-                    throw new IllegalArgumentException(
+                    JOptionPane.showMessageDialog(frame,
                             "Latitude must be between -90 and 90 and longitude between -180 and 180.");
+                    statusLabel.setText("Current filter: Invalid");
+                    return; // Exit the method if the input is invalid
                 }
 
                 // If the input is valid, update the filter status label and apply the filter
@@ -207,17 +236,9 @@ public class GpsGUI {
             } catch (NumberFormatException e) {
                 // If parsing the double fails, show an error message
                 JOptionPane.showMessageDialog(frame, "Invalid input for latitude or longitude.");
-                filterStatusLabel.setText("Current filter: Invalid");
-            } catch (IllegalArgumentException e) {
-                // If the input values are out of range, show an error message
-                JOptionPane.showMessageDialog(frame, e.getMessage());
-                filterStatusLabel.setText("Current filter: Invalid");
+                statusLabel.setText("Current filter: Invalid");
             }
         });
-
-        frame.pack();
-        frame.setSize(600, 600);
-        frame.setVisible(true);
     }
 
     private static void simulateTestCases() {

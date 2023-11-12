@@ -19,20 +19,22 @@ public class Gui_Test {
     }
 
     @Test
-    public void testTrackerDisplayUpdate() {
-        // Simulate a GPS event
-        GpsEvent simulatedEvent = new GpsEvent("Tracker1", 50.0, 10.0, 100.0);
-
-        // Send the simulated event to the GUI
-        gpsGUI.processGpsEvent(simulatedEvent);
-
-        // Retrieve the label from the GUI
-        JLabel trackerLabel = gpsGUI.getTrackerLabel("Tracker1"); // Implement this method in GpsGUI
-
-        // Assert that the label text is as expected
-        String expectedDisplay = "Tracker1: Lat 50.0, Lon 10.0";
-        assertEquals(expectedDisplay, trackerLabel.getText());
+    public void testTrackerLabelUpdate() {
+        // Setup the test environment, if necessary
+        GpsEvent testEvent = new GpsEvent("Tracker1", 50.0, 10.0, 100.0);
+        // Simulate receiving a GPS event
+        GpsGUI.processGpsEvent(testEvent);
+        // Allow time for the event to be processed
+        try {
+            Thread.sleep(1000); // Adjust the time as necessary
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        // Check the label for Tracker1
+        JLabel trackerLabel = GpsGUI.getTrackerLabel("Tracker1");
+        Assert.assertEquals("Tracker1: Lat 50.0, Lon 10.0", trackerLabel.getText());
     }
+    
 
     // Add more tests for different parts of the GUI...
 
