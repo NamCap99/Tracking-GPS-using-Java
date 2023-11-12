@@ -1,5 +1,7 @@
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
@@ -12,14 +14,12 @@ import java.awt.EventQueue;
 import org.junit.After;
 
 public class Gui_Test {
-
     private GpsGUI gpsGUI; // Assume GpsGUI is your main GUI class
 
     @Before
     public void setUp() {
         // Initialize GpsGUI with mock or real components as necessary
         gpsGUI = new GpsGUI();
-        gpsGUI.initializeComponents(); // You need to write this method in GpsGUI
     }
 
     @Test
@@ -55,9 +55,9 @@ public class Gui_Test {
     @Test
     public void testGuiInitialization() {
         // Verify all components are initialized
-        assertNotNull("Frame should not be null", gpsGUI.frame);
-        assertNotNull("Tracker panel should not be null", gpsGUI.trackerPanel);
-        assertNotNull("Input panel should not be null", gpsGUI.inputPanel);
+        assertNotNull("Frame should not be null", gpsGUI.getFrame());
+        assertNotNull("Tracker panel should not be null", gpsGUI.getTrackerPanel());
+        assertNotNull("Input panel should not be null", gpsGUI.getInputPanel());
         // Add more assertions as needed for other components
     }
 

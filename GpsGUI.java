@@ -17,17 +17,26 @@ public class GpsGUI {
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
-    static JFrame frame;
+    protected static JFrame frame;
+    protected static JPanel trackerPanel;
+    protected static JPanel inputPanel;
+    private static boolean isTestMode = false; // Default to not being in test mode
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
 
     static final int numberOfTrackers = 10; // Example number of trackers
-    protected static JPanel trackerPanel;
-    static JPanel inputPanel;
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
     // Initialize event display label in static context
     // private static JLabel eventDisplayLabel = new JLabel("No data");
+
+    public GpsGUI() {
+        createAndShowGUI(); // Pass false to indicate not to show the GUI
+    }
+
+    public static void setTestMode(boolean testMode) {
+        isTestMode = testMode;
+    }
 
     // Assuming you have a class GpsEvent with the required methods
     public static class GpsEvent {
@@ -58,6 +67,18 @@ public class GpsGUI {
         public double getAltitude() {
             return altitude;
         }
+    }
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public JPanel getTrackerPanel() {
+        return trackerPanel;
+    }
+
+    public JPanel getInputPanel() {
+        return inputPanel;
     }
 
     private static Stream<GpsEvent> combineAllTrackerStreams() {
@@ -129,7 +150,7 @@ public class GpsGUI {
         });
     }
 
-    private static void createAndShowGUI() {
+    public static void createAndShowGUI() {
         frame = new JFrame("GPS Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -144,7 +165,9 @@ public class GpsGUI {
 
         frame.pack();
         frame.setSize(600, 600);
-        frame.setVisible(true);
+        if (!isTestMode) {
+            frame.setVisible(true); // Only make the frame visible if not in test mode
+        }
     }
 
     private static JPanel createTrackerPanel() {
