@@ -14,7 +14,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class GpsGUI {
-    public GpsEvent event;
+    private static GpsEvent ev;
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
@@ -209,8 +209,8 @@ public class GpsGUI {
     private static SLabel createTrackerLabel(Cell<GpsEvent> trackerData) {
         // Ensure that trackerData is not null and is a valid Cell instance
         if (trackerData != null) {
-            Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
-                    + event.getLatitude() + ", Lon " + event.getLongitude());
+            Cell<String> displayData = trackerData.map(ev -> "Tracker " + ev.getTrackerId() + ": Lat "
+                    + ev.getLatitude() + ", Lon " + ev.getLongitude());
             return new SLabel(displayData);
         } else {
             // Handle the case where trackerData is null, perhaps by returning a default
@@ -282,8 +282,8 @@ public class GpsGUI {
 
                 // Update the combined data display with the filtered data
                 filteredStream
-                        .map(event -> "Tracker " + event.getTrackerId() + ": Lat " + event.getLatitude() + ", Lon "
-                                + event.getLongitude())
+                        .map(ev -> "Tracker " + ev.getTrackerId() + ": Lat " + ev.getLatitude() + ", Lon "
+                                + ev.getLongitude())
                         .hold("No data")
                         .listen(filteredData -> combinedDataDisplay.setText(filteredData));
             } catch (NumberFormatException e) {
@@ -402,13 +402,13 @@ public class GpsGUI {
         }
     }
 
-    public static void updateTrackerDisplay(GpsEvent event) {
+    public static void updateTrackerDisplay(GpsEvent ev) {
         SwingUtilities.invokeLater(() -> {
-            JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
+            JLabel trackerLabel = getTrackerLabel(ev.getTrackerId());
             if (trackerLabel != null) {
                 // Update the label with the latest event data.
                 String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f",
-                        event.getTrackerId(), event.getLatitude(), event.getLongitude());
+                        ev.getTrackerId(), ev.getLatitude(), ev.getLongitude());
                 trackerLabel.setText(labelText);
             }
         });
