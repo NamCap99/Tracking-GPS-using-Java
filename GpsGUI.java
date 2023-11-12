@@ -286,14 +286,14 @@ public class GpsGUI {
         }, 0, 5, TimeUnit.MINUTES); // Schedules the task to run every 5 minutes
     }
 
-    private static double calculateDistance(GpsEvent lastEvent, GpsEvent currentEvent) {
+    public static double calculateDistance(GpsEvent startEvent, GpsEvent endEvent) {
         final int R = 6371; // Radius of the Earth in kilometers
 
-        double latDistance = Math.toRadians(currentEvent.getLatitude() - lastEvent.getLatitude());
-        double lonDistance = Math.toRadians(currentEvent.getLongitude() - lastEvent.getLongitude());
+        double latDistance = Math.toRadians(endEvent.getLatitude() - startEvent.getLatitude());
+        double lonDistance = Math.toRadians(endEvent.getLongitude() - startEvent.getLongitude());
 
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
-                Math.cos(Math.toRadians(lastEvent.getLatitude())) * Math.cos(Math.toRadians(currentEvent.getLatitude()))
+                Math.cos(Math.toRadians(startEvent.getLatitude())) * Math.cos(Math.toRadians(endEvent.getLatitude()))
                         *
                         Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -330,7 +330,7 @@ public class GpsGUI {
         });
     }
 
-    private static void updateTrackerDistanceDisplay(String trackerId, double newDistance) {
+    public static void updateTrackerDistanceDisplay(String trackerId, double newDistance) {
         SwingUtilities.invokeLater(() -> {
             String distanceStr = String.format("Tracker %s: Total Distance: %.2f meters", trackerId, newDistance);
             JLabel distanceLabel = trackerDistanceLabels.get(trackerId);
@@ -357,7 +357,7 @@ public class GpsGUI {
     }
 
     // Getter for tracker labels if needed for tests
-    public JLabel getTrackerLabel(String trackerId) {
+    public static JLabel getTrackerLabel(String trackerId) {
         return trackerDistanceLabels.get(trackerId);
     }
 }

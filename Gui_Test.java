@@ -17,23 +17,28 @@ public class Gui_Test {
         gpsGUI = new GpsGUI();
         gpsGUI.initializeComponents(); // You need to write this method in GpsGUI
     }
-
     @Test
-    public void testTrackerLabelUpdate() {
-        // Setup the test environment, if necessary
-        GpsEvent testEvent = new GpsEvent("Tracker1", 50.0, 10.0, 100.0);
-        // Simulate receiving a GPS event
-        GpsGUI.processGpsEvent(testEvent);
-        // Allow time for the event to be processed
-        try {
-            Thread.sleep(1000); // Adjust the time as necessary
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // Check the label for Tracker1
-        JLabel trackerLabel = GpsGUI.getTrackerLabel("Tracker1");
-        Assert.assertEquals("Tracker1: Lat 50.0, Lon 10.0", trackerLabel.getText());
-    }
+public void testDistanceCalculationAndUpdate() {
+    GpsGUI gpsGUI = new GpsGUI(); // Create an instance of GpsGUI if necessary
+    gpsGUI.initializeComponents(); // Initialize the components if necessary
+
+    String trackerId = "Tracker1";
+    GpsEvent startEvent = new GpsEvent(trackerId, 50.0, 10.0, 100.0);
+    GpsEvent endEvent = new GpsEvent(trackerId, 50.001, 10.001, 100.0);
+
+    // Assuming calculateDistance is a static utility method
+    double distance = GpsGUI.calculateDistance(startEvent, endEvent);
+
+    // Update the distance traveled for the tracker
+    // Since updateTrackerDistanceDisplay is static, we can call it directly
+    GpsGUI.updateTrackerDistanceDisplay(trackerId, distance);
+
+    // Retrieve the label from the GUI and assert the distance is displayed correctly
+    JLabel trackerLabel = GpsGUI.getTrackerLabel(trackerId);
+    String expectedDisplay = "Tracker " + trackerId + ": Total Distance: " + String.format("%.2f meters", distance);
+    Assert.assertEquals(expectedDisplay, trackerLabel.getText());
+}
+
     
 
     // Add more tests for different parts of the GUI...
