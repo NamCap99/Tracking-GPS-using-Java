@@ -192,19 +192,28 @@ public class GpsGUI {
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.setBorder(BorderFactory.createTitledBorder("Trackers"));
 
-        for (int i = 0; i < numberOfTrackers; i++) {
-            String trackerId = "Tracker " + (i + 1);
-            Cell<GpsEvent> trackerData = simulateTrackerData(trackerId);
-            panel.add(createTrackerLabel(trackerData));
-            panel.add(createDistanceLabel(trackerId));
+        for (int i = 1; i <= numberOfTrackers; i++) {
+            String trackerId = "Tracker" + i;
+            // Ensure that trackerCells contains a Cell for each trackerId
+            SLabel trackerLabel = createTrackerLabel(trackerCells.get(trackerId));
+            panel.add(trackerLabel); // This label should now reflect live data changes
+            JLabel distanceLabel = createDistanceLabel(trackerId);
+            panel.add(distanceLabel); // This label is for displaying the distance
         }
         return panel;
     }
 
     private static SLabel createTrackerLabel(Cell<GpsEvent> trackerData) {
-        Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
-                + event.getLatitude() + ", Lon " + event.getLongitude());
-        return new SLabel(displayData);
+        // Ensure that trackerData is not null and is a valid Cell instance
+        if (trackerData != null) {
+            Cell<String> displayData = trackerData.map(event -> "Tracker " + event.getTrackerId() + ": Lat "
+                    + event.getLatitude() + ", Lon " + event.getLongitude());
+            return new SLabel(displayData);
+        } else {
+            // Handle the case where trackerData is null, perhaps by returning a default
+            // label or logging an error
+            return new SLabel(new Cell<>("No Data"));
+        }
     }
 
     private static JLabel createDistanceLabel(String trackerId) {
