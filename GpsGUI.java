@@ -38,8 +38,11 @@ public class GpsGUI {
     }
 
     public static void processNewData(String trackerId, double latitude, double longitude, double altitude) {
+        // Create a new GpsEvent object with the provided details
         GpsEvent event = new GpsEvent(trackerId, latitude, longitude, altitude);
-        processNewGpsEvent(event); // Assuming this method handles the new event
+
+        // Pass the new event to the method that will handle it
+        processNewGpsEvent(event);
     }
 
     public JFrame getFrame() {
@@ -116,9 +119,15 @@ public class GpsGUI {
     }
 
     public static void main(String[] args) {
-        createAndShowGUI();
-        setupTrackerStreams();
-        setupPeriodicTasks();
+        SwingUtilities.invokeLater(() -> {
+            createAndShowGUI(); // Assemble the GUI components
+            setupTrackerStreams(); // Set up the FRP streams for the trackers
+            setupPeriodicTasks(); // Set up any periodic tasks or timers
+
+            if (!isTestMode) {
+                showGUI(); // Make the GUI visible if not in test mode
+            }
+        });
     }
 
     public GpsGUI() {
@@ -143,10 +152,9 @@ public class GpsGUI {
 
         frame.pack();
         frame.setSize(600, 600);
-        // Do not call frame.setVisible here; that's handled in showGUI()
     }
 
-    private void showGUI() {
+    private static void showGUI() {
         // Make the frame visible, should be called outside of testing context
         frame.setVisible(true);
     }
@@ -166,6 +174,7 @@ public class GpsGUI {
 
         frame.pack();
         frame.setSize(600, 600);
+        // frame.setVisible(true);
     }
 
     private static void setupTrackerStreams() {
@@ -351,25 +360,24 @@ public class GpsGUI {
     public static void processGpsEvent(GpsEvent simulatedEvent) {
         SwingUtilities.invokeLater(() -> {
             String trackerId = simulatedEvent.getTrackerId();
-            double newDistance = 0.0;
-            // Inside the processGpsEvent method
+
+            // If there's a last known position, calculate the distance and update it
             if (lastKnownPositions.containsKey(trackerId)) {
                 GpsEvent lastEvent = lastKnownPositions.get(trackerId);
                 double distanceIncrement = calculateDistance(lastEvent, simulatedEvent);
 
-                // Update the total distance
+                // Update the total distance traveled for the tracker
                 double newTotalDistance = trackerDistances.getOrDefault(trackerId, 0.0) + distanceIncrement;
                 trackerDistances.put(trackerId, newTotalDistance);
 
                 // Update the distance display for the tracker
                 updateTrackerDistanceDisplay(trackerId, newTotalDistance);
             } else {
-                // If there's no last known position, we just put the current event as the last
-                // known position
+                // If there's no last known position, initialize the distance and set the
+                // current event as the last known position
+                trackerDistances.put(trackerId, 0.0);
                 lastKnownPositions.put(trackerId, simulatedEvent);
             }
-            // Update the total distance
-            trackerDistances.put(trackerId, trackerDistances.getOrDefault(trackerId, 0.0) + newDistance);
         });
     }
 
