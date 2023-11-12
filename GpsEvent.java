@@ -29,8 +29,8 @@ public class GpsEvent {
     }
 
     // @Override
-    // public String toString() {
-    // return trackerId + " | lat: " + latitude + " lon: " + longitude + " alt: " +
-    // altitude;
-    // }
+    public String toString() {
+        return trackerId + " | lat: " + latitude + " lon: " + longitude + " alt: " +
+                altitude;
+    }
 }

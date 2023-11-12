@@ -17,48 +17,48 @@ public class GpsGUI {
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
-    private static JFrame frame;
+    static JFrame frame;
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
 
-    private static final int numberOfTrackers = 10; // Example number of trackers
-    private static JPanel trackerPanel;
-    private static JPanel inputPanel;
+    static final int numberOfTrackers = 10; // Example number of trackers
+    protected static JPanel trackerPanel;
+    static JPanel inputPanel;
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
     // Initialize event display label in static context
     // private static JLabel eventDisplayLabel = new JLabel("No data");
 
     // Assuming you have a class GpsEvent with the required methods
-    // public static class GpsEvent {
-    //     private final String trackerId;
-    //     private final double latitude;
-    //     private final double longitude;
-    //     private final double altitude;
+    public static class GpsEvent {
+        public final String trackerId;
+        public final double latitude;
+        public final double longitude;
+        public final double altitude;
 
-    //     public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
-    //         this.trackerId = trackerId;
-    //         this.latitude = latitude;
-    //         this.longitude = longitude;
-    //         this.altitude = altitude;
-    //     }
+        public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
+            this.trackerId = trackerId;
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.altitude = altitude;
+        }
 
-    //     public String getTrackerId() {
-    //         return trackerId;
-    //     }
+        public String getTrackerId() {
+            return trackerId;
+        }
 
-    //     public double getLatitude() {
-    //         return latitude;
-    //     }
+        public double getLatitude() {
+            return latitude;
+        }
 
-    //     public double getLongitude() {
-    //         return longitude;
-    //     }
+        public double getLongitude() {
+            return longitude;
+        }
 
-    //     public double getAltitude() {
-    //         return altitude;
-    //     }
-    // }
+        public double getAltitude() {
+            return altitude;
+        }
+    }
 
     private static Stream<GpsEvent> combineAllTrackerStreams() {
         StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
@@ -305,14 +305,14 @@ public class GpsGUI {
     }
 
     // Example of processing a new GPS event
-    public static void processGpsEvent(GpsEvent newEvent) {
+    public static void processGpsEvent(GpsEvent simulatedEvent) {
         SwingUtilities.invokeLater(() -> {
-            String trackerId = newEvent.getTrackerId();
+            String trackerId = simulatedEvent.getTrackerId();
             double newDistance = 0.0;
             // Inside the processGpsEvent method
             if (lastKnownPositions.containsKey(trackerId)) {
                 GpsEvent lastEvent = lastKnownPositions.get(trackerId);
-                double distanceIncrement = calculateDistance(lastEvent, newEvent);
+                double distanceIncrement = calculateDistance(lastEvent, simulatedEvent);
 
                 // Update the total distance
                 double newTotalDistance = trackerDistances.getOrDefault(trackerId, 0.0) + distanceIncrement;
@@ -323,7 +323,7 @@ public class GpsGUI {
             } else {
                 // If there's no last known position, we just put the current event as the last
                 // known position
-                lastKnownPositions.put(trackerId, newEvent);
+                lastKnownPositions.put(trackerId, simulatedEvent);
             }
             // Update the total distance
             trackerDistances.put(trackerId, trackerDistances.getOrDefault(trackerId, 0.0) + newDistance);
@@ -360,5 +360,4 @@ public class GpsGUI {
     public static JLabel getTrackerLabel(String trackerId) {
         return trackerDistanceLabels.get(trackerId);
     }
-
 }
