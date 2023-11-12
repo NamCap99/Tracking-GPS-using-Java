@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import java.awt.EventQueue;
 import org.junit.After;
 
-
 public class Gui_Test {
 
     private GpsGUI gpsGUI; // Assume GpsGUI is your main GUI class
@@ -19,24 +18,25 @@ public class Gui_Test {
     }
 
     @Test
-    public void testDistanceCalculationAndUpdate() throws Exception{
-        try{
+    public void testDistanceCalculationAndUpdate() throws Exception {
+        try {
             String trackerId = "Tracker1";
-            GpsGUI.GpsEvent startEvent = new GpsGUI.GpsEvent(trackerId, 50.0, 10.0, 100.0);
-            GpsGUI.GpsEvent endEvent = new GpsGUI.GpsEvent(trackerId, 50.001, 10.001, 100.0);
-    
+            GpsEvent startEvent = new GpsEvent(trackerId, 50.0, 10.0, 100.0);
+            GpsEvent endEvent = new GpsEvent(trackerId, 50.001, 10.001, 100.0);
+
             // Call the public static method calculateDistance
             double distance = GpsGUI.calculateDistance(startEvent, endEvent);
-    
+
             EventQueue.invokeAndWait(() -> GpsGUI.updateTrackerDistanceDisplay(trackerId, distance));
-    
+
             // Retrieve the label from your GpsGUI instance
             JLabel trackerLabel = new JLabel(); // Stubbed out for example purposes
             // Wait for the EDT to process the update
-            EventQueue.invokeAndWait(() -> {});
+            EventQueue.invokeAndWait(() -> {
+            });
             // Call the now-public static method updateTrackerDistanceDisplay
             GpsGUI.updateTrackerDistanceDisplay(trackerId, distance);
-            
+
             String expectedDisplay = String.format("%s: Total Distance: %.2f meters", trackerId, distance);
             Assert.assertEquals(expectedDisplay, trackerLabel.getText());
         } catch (Exception e) {

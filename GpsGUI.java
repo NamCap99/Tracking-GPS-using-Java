@@ -30,35 +30,35 @@ public class GpsGUI {
     // private static JLabel eventDisplayLabel = new JLabel("No data");
 
     // Assuming you have a class GpsEvent with the required methods
-    public static class GpsEvent {
-        private final String trackerId;
-        private final double latitude;
-        private final double longitude;
-        private final double altitude;
+    // public static class GpsEvent {
+    //     private final String trackerId;
+    //     private final double latitude;
+    //     private final double longitude;
+    //     private final double altitude;
 
-        public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
-            this.trackerId = trackerId;
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.altitude = altitude;
-        }
+    //     public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
+    //         this.trackerId = trackerId;
+    //         this.latitude = latitude;
+    //         this.longitude = longitude;
+    //         this.altitude = altitude;
+    //     }
 
-        public String getTrackerId() {
-            return trackerId;
-        }
+    //     public String getTrackerId() {
+    //         return trackerId;
+    //     }
 
-        public double getLatitude() {
-            return latitude;
-        }
+    //     public double getLatitude() {
+    //         return latitude;
+    //     }
 
-        public double getLongitude() {
-            return longitude;
-        }
+    //     public double getLongitude() {
+    //         return longitude;
+    //     }
 
-        public double getAltitude() {
-            return altitude;
-        }
-    }
+    //     public double getAltitude() {
+    //         return altitude;
+    //     }
+    // }
 
     private static Stream<GpsEvent> combineAllTrackerStreams() {
         StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
