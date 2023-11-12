@@ -17,6 +17,8 @@ public class GpsGUI {
     private static Map<String, JLabel> trackerDistanceLabels = new HashMap<>();
     private static Map<String, GpsEvent> lastKnownPositions = new HashMap<>();
     private static Map<String, Double> trackerDistances = new HashMap<>();
+    private static final Map<String, Cell<GpsEvent>> trackerCells = new HashMap<>();
+    private static final Map<String, StreamSink<GpsEvent>> trackerStreams = new HashMap<>();
     protected static JFrame frame;
     protected static JPanel trackerPanel;
     protected static JPanel inputPanel;
@@ -144,11 +146,9 @@ public class GpsGUI {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            createAndShowGUI();
-            simulateTestCases();
-            setupPeriodicTasks();
-        });
+        createAndShowGUI();
+        setupTrackerStreams();
+        setupPeriodicTasks();
     }
 
     public static void createAndShowGUI() {
@@ -168,6 +168,19 @@ public class GpsGUI {
         frame.setSize(600, 600);
         if (!isTestMode) {
             frame.setVisible(true); // Only make the frame visible if not in test mode
+        }
+    }
+
+    private static void setupTrackerStreams() {
+        for (int i = 1; i <= numberOfTrackers; i++) {
+            String trackerId = "Tracker" + i;
+            StreamSink<GpsEvent> streamSink = new StreamSink<>();
+            trackerStreams.put(trackerId, streamSink);
+            Cell<GpsEvent> cell = streamSink.hold(new GpsEvent(trackerId, 0, 0, 0));
+            trackerCells.put(trackerId, cell);
+
+            // Set up the GUI to react to changes in the cell.
+            cell.listen(event -> updateTrackerDisplay(event));
         }
     }
 
@@ -365,30 +378,44 @@ public class GpsGUI {
     }
 
     // Method to update the GUI display for a tracker based on a GpsEvent.
-    public static void updateTrackerDisplay(Cell<GpsEvent> trackerDataCell) {
-        // Here you would actually listen to the cell changes and update the GUI.
-        // For now, let's just get the current value and update a label as an example.
-        GpsEvent event = trackerDataCell.sample(); // Get the current event from the cell.
+    // public static void updateTrackerDisplay(Cell<GpsEvent> trackerDataCell) {
+    // // Here you would actually listen to the cell changes and update the GUI.
+    // // For now, let's just get the current value and update a label as an
+    // example.
+    // GpsEvent event = trackerDataCell.sample(); // Get the current event from the
+    // cell.
 
-        // Assume you have a method to get a label by tracker ID.
-        JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
-        if (trackerLabel != null) {
-            // Update the text of the label with new event data.
-            String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f, Alt %.2f meters",
-                    event.getTrackerId(),
-                    event.getLatitude(),
-                    event.getLongitude(),
-                    event.getAltitude());
-            trackerLabel.setText(labelText);
+    // // Assume you have a method to get a label by tracker ID.
+    // JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
+    // if (trackerLabel != null) {
+    // // Update the text of the label with new event data.
+    // String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f, Alt %.2f
+    // meters",
+    // event.getTrackerId(),
+    // event.getLatitude(),
+    // event.getLongitude(),
+    // event.getAltitude());
+    // trackerLabel.setText(labelText);
+    // }
+    // }
+
+    public static void processNewGpsEvent(GpsEvent newEvent) {
+        StreamSink<GpsEvent> streamSink = trackerStreams.get(newEvent.getTrackerId());
+        if (streamSink != null) {
+            streamSink.send(newEvent);
         }
     }
 
-    public void initializeStreams() {
-    }
-
-    // Method to initialize components for testing
-    public void initializeComponents() {
-        // Initialize components, can be left empty if constructor already does this
+    public static void updateTrackerDisplay(GpsEvent event) {
+        SwingUtilities.invokeLater(() -> {
+            JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
+            if (trackerLabel != null) {
+                // Update the label with the latest event data.
+                String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f",
+                        event.getTrackerId(), event.getLatitude(), event.getLongitude());
+                trackerLabel.setText(labelText);
+            }
+        });
     }
 
     // Method to clean up after tests

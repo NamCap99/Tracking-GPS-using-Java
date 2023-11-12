@@ -89,22 +89,26 @@ public class Gui_Test {
     public void testTrackerDisplayUpdate() {
         for (int i = 1; i <= 10; i++) {
             String trackerId = "Tracker" + i;
-            Cell<GpsEvent> trackerData = simulateTrackerData(trackerId);
-
-            // Invoke the method that updates the GUI with the simulated data.
-            gpsGUI.updateTrackerDisplay(trackerData);
-
+            // Directly create a GpsEvent with deterministic data.
+            GpsEvent simulatedEvent = new GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
+            
+            // Invoke the method that updates the GUI with the simulated event.
+            // This method needs to be implemented in GpsGUI.
+            gpsGUI.updateTrackerDisplay(simulatedEvent);
+            
             // Retrieve the label for this tracker.
             JLabel trackerLabel = gpsGUI.getTrackerLabel(trackerId);
-
-            // Now, you can check if the tracker label was updated with the simulated data.
-            GpsEvent expectedEvent = trackerData.sample();
-            String expectedText = "Lat: " + expectedEvent.getLatitude() + ", Lon: " + expectedEvent.getLongitude();
+            
+            // Check if the tracker label was updated with the simulated data.
+            // The format here should match the format used in updateTrackerDisplay.
+            String expectedText = String.format("Tracker%s: Lat %.1f, Lon %.1f, Alt %.1f meters",
+                                 trackerId, simulatedEvent.getLatitude(), simulatedEvent.getLongitude(),
+                                 simulatedEvent.getAltitude());
             assertEquals("Tracker label should display the correct coordinates.",
-                    expectedText, trackerLabel.getText());
+                         expectedText, trackerLabel.getText());
         }
     }
-
+    
     @After
     public void tearDown() {
         // Clean up the FRP environment if needed
