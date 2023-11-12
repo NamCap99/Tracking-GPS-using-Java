@@ -39,35 +39,36 @@ public class GpsGUI {
     }
 
     // Assuming you have a class GpsEvent with the required methods
-    public static class GpsEvent {
-        public final String trackerId;
-        public final double latitude;
-        public final double longitude;
-        public final double altitude;
+    // public static class GpsEvent {
+    // public final String trackerId;
+    // public final double latitude;
+    // public final double longitude;
+    // public final double altitude;
 
-        public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
-            this.trackerId = trackerId;
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.altitude = altitude;
-        }
+    // public GpsEvent(String trackerId, double latitude, double longitude, double
+    // altitude) {
+    // this.trackerId = trackerId;
+    // this.latitude = latitude;
+    // this.longitude = longitude;
+    // this.altitude = altitude;
+    // }
 
-        public String getTrackerId() {
-            return trackerId;
-        }
+    // public String getTrackerId() {
+    // return trackerId;
+    // }
 
-        public double getLatitude() {
-            return latitude;
-        }
+    // public double getLatitude() {
+    // return latitude;
+    // }
 
-        public double getLongitude() {
-            return longitude;
-        }
+    // public double getLongitude() {
+    // return longitude;
+    // }
 
-        public double getAltitude() {
-            return altitude;
-        }
-    }
+    // public double getAltitude() {
+    // return altitude;
+    // }
+    // }
 
     public JFrame getFrame() {
         return frame;
@@ -361,6 +362,25 @@ public class GpsGUI {
                 distanceLabel.setText(distanceStr);
             }
         });
+    }
+
+    // Method to update the GUI display for a tracker based on a GpsEvent.
+    public static void updateTrackerDisplay(Cell<GpsEvent> trackerDataCell) {
+        // Here you would actually listen to the cell changes and update the GUI.
+        // For now, let's just get the current value and update a label as an example.
+        GpsEvent event = trackerDataCell.sample(); // Get the current event from the cell.
+
+        // Assume you have a method to get a label by tracker ID.
+        JLabel trackerLabel = getTrackerLabel(event.getTrackerId());
+        if (trackerLabel != null) {
+            // Update the text of the label with new event data.
+            String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f, Alt %.2f meters",
+                    event.getTrackerId(),
+                    event.getLatitude(),
+                    event.getLongitude(),
+                    event.getAltitude());
+            trackerLabel.setText(labelText);
+        }
     }
 
     public void initializeStreams() {

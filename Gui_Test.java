@@ -1,6 +1,8 @@
 import org.junit.Assert;
 import org.junit.Test;
 
+import nz.sodium.Cell;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -11,6 +13,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
+
 import org.junit.After;
 
 public class Gui_Test {
@@ -19,37 +23,28 @@ public class Gui_Test {
     @Before
     public void setUp() {
         // Initialize GpsGUI with mock or real components as necessary
+        GpsGUI.setTestMode(true);
         gpsGUI = new GpsGUI();
     }
 
     @Test
-    public void testDistanceCalculationAndUpdate() throws Exception {
-        try {
-            String trackerId = "Tracker1";
-            GpsEvent startEvent = new GpsEvent(trackerId, 50.0, 10.0, 100.0);
-            GpsEvent endEvent = new GpsEvent(trackerId, 50.001, 10.001, 100.0);
+    public void testDistanceCalculationAndUpdate() {
+        String trackerId = "Tracker1";
+        GpsEvent startEvent = new GpsEvent(trackerId, 50.0, 10.0, 100.0);
+        GpsEvent endEvent = new GpsEvent(trackerId, 50.001, 10.001, 100.0);
 
-            // Call the public static method calculateDistance
-            // double distance = GpsGUI.calculateDistance(startEvent, endEvent);
+        // Call the method to calculate the distance between two events.
+        double distance = GpsGUI.calculateDistance(startEvent, endEvent);
 
-            // EventQueue.invokeAndWait(() -> GpsGUI.updateTrackerDistanceDisplay(trackerId,
-            // distance));
+        // Call the method to update the tracker's distance display.
+        gpsGUI.updateTrackerDistanceDisplay(trackerId, distance);
 
-            // Retrieve the label from your GpsGUI instance
-            JLabel trackerLabel = new JLabel(); // Stubbed out for example purposes
-            // Wait for the EDT to process the update
-            EventQueue.invokeAndWait(() -> {
-            });
-            // Call the now-public static method updateTrackerDistanceDisplay
-            // GpsGUI.updateTrackerDistanceDisplay(trackerId, distance);
+        // Retrieve the label for this tracker.
+        JLabel trackerLabel = gpsGUI.getTrackerLabel(trackerId);
 
-            // String expectedDisplay = String.format("%s: Total Distance: %.2f meters",
-            // trackerId, distance);
-            // Assert.assertEquals(expectedDisplay, trackerLabel.getText());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("An exception occurred during the test.");
-        }
+        // Check if the label's text includes the calculated distance.
+        String expectedDisplay = String.format("%s: Total Distance: %.2f meters", trackerId, distance);
+        assertEquals(expectedDisplay, trackerLabel.getText());
     }
 
     @Test
@@ -62,32 +57,17 @@ public class Gui_Test {
     }
 
     @Test
-    public void testTrackerDisplays() {
-        // Simulate events for ten trackers and verify that their displays are updated
-        // correctly
+    public void testTrackerDisplays() throws InvocationTargetException, InterruptedException {
         for (int i = 1; i <= 10; i++) {
             String trackerId = "Tracker" + i;
-
-            // Check initial state
             JLabel initialLabel = gpsGUI.getTrackerLabel(trackerId);
             assertNotNull("Label for tracker should not be null", initialLabel);
             assertEquals("Initial text should show 0 meters", trackerId + ": Distance 0 meters",
                     initialLabel.getText());
 
-            // Simulate processing an event
-            GpsGUI.GpsEvent simulatedEvent = new GpsGUI.GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
-            gpsGUI.processGpsEvent(simulatedEvent);
+            GpsEvent simulatedEvent = new GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
+            SwingUtilities.invokeAndWait(() -> gpsGUI.processGpsEvent(simulatedEvent));
 
-            // Allow the event to be processed by the EDT
-            try {
-                SwingUtilities.invokeAndWait(() -> {
-                });
-            } catch (Exception e) {
-                e.printStackTrace();
-                fail("Failed to process the event in the EDT.");
-            }
-
-            // Verify the tracker display is updated correctly
             JLabel updatedLabel = gpsGUI.getTrackerLabel(trackerId);
             String expectedDisplay = String.format("Tracker%s: Lat %.1f, Lon %.1f", trackerId, 50.0 + i, 10.0 + i);
             assertEquals("Tracker display should be updated with simulated event data", expectedDisplay,
@@ -95,9 +75,40 @@ public class Gui_Test {
         }
     }
 
+    // Simulate the tracker data synchronously for testing purposes.
+    private Cell<GpsEvent> simulateTrackerData(String trackerId) {
+        // Synchronously generate a GpsEvent with test data.
+        double latitude = Math.random() * 180 - 90; // Random latitude between -90 and 90
+        double longitude = Math.random() * 360 - 180; // Random longitude between -180 and 180
+        double altitude = Math.random() * 1000; // Random altitude up to 1000
+        GpsEvent simulatedEvent = new GpsEvent(trackerId, latitude, longitude, altitude);
+        return new Cell<>(simulatedEvent);
+    }
+
+    @Test
+    public void testTrackerDisplayUpdate() {
+        for (int i = 1; i <= 10; i++) {
+            String trackerId = "Tracker" + i;
+            Cell<GpsEvent> trackerData = simulateTrackerData(trackerId);
+
+            // Invoke the method that updates the GUI with the simulated data.
+            gpsGUI.updateTrackerDisplay(trackerData);
+
+            // Retrieve the label for this tracker.
+            JLabel trackerLabel = gpsGUI.getTrackerLabel(trackerId);
+
+            // Now, you can check if the tracker label was updated with the simulated data.
+            GpsEvent expectedEvent = trackerData.sample();
+            String expectedText = "Lat: " + expectedEvent.getLatitude() + ", Lon: " + expectedEvent.getLongitude();
+            assertEquals("Tracker label should display the correct coordinates.",
+                    expectedText, trackerLabel.getText());
+        }
+    }
+
     @After
     public void tearDown() {
         // Clean up the FRP environment if needed
         GpsGUI.cleanup(); // Implement cleanup method in GpsGUI if necessary
+        GpsGUI.setTestMode(false); // Reset the test mode.
     }
 }
