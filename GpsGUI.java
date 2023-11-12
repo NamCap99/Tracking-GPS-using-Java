@@ -28,8 +28,6 @@ public class GpsGUI {
     static final int numberOfTrackers = 10; // Example number of trackers
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
-    // Initialize event display label in static context
-    // private static JLabel eventDisplayLabel = new JLabel("No data");
 
      // Assuming you have a class GpsEvent with the required methods
      protected static class GpsEvent {
@@ -61,8 +59,6 @@ public class GpsGUI {
             return altitude;
         }
     }
-
-    // In your GpsGUI constructor or initialization block
 
     public static void setTestMode(boolean testMode) {
         isTestMode = testMode;
@@ -150,22 +146,21 @@ public class GpsGUI {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            createAndShowGUI(); // Assemble the GUI components
-            setupTrackerStreams(); // Set up the FRP streams for the trackers
-            setupPeriodicTasks(); // Set up any periodic tasks or timers
-
-            if (!isTestMode) {
-                showGUI(); // Make the GUI visible if not in test mode
-            }
-        });
+        if (!isTestMode) {
+            SwingUtilities.invokeLater(() -> {
+                GpsGUI gpsGUI = new GpsGUI(); // Create the GUI object
+                gpsGUI.showGUI(); // Show the GUI
+                createAndShowGUI(); // Assemble the GUI components
+                setupTrackerStreams(); // Set up the FRP streams for the trackers
+                setupPeriodicTasks(); // Set up any periodic tasks or timers
+                showGUI(); // Make the GUI visible
+            });
+        }
     }
 
+    // Constructor
     public GpsGUI() {
         initializeComponents(); // Initialize components but do not show the GUI
-        if (!isTestMode) {
-            showGUI(); // Only display the GUI if not in test mode
-        }
     }
 
     public void initializeComponents() {
@@ -184,10 +179,12 @@ public class GpsGUI {
         frame.pack();
         frame.setSize(600, 600);
     }
-
-    private static void showGUI() {
-        // Make the frame visible, should be called outside of testing context
-        frame.setVisible(true);
+    
+    // Call this method from outside the constructor to show the GUI
+    public static void showGUI() {
+        if (!isTestMode) {
+            frame.setVisible(true);
+        }
     }
 
     public static void createAndShowGUI() {
