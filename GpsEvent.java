@@ -1,9 +1,8 @@
 public class GpsEvent {
-
-    public String trackerId;
-    public double latitude;
-    public double longitude;
-    public double altitude;
+    private String trackerId;
+    private double latitude;
+    private double longitude;
+    private double altitude;
 
     public GpsEvent(String trackerId, double latitude, double longitude, double altitude) {
         this.trackerId = trackerId;
@@ -27,10 +26,4 @@ public class GpsEvent {
     public double getAltitude() {
         return altitude;
     }
-
-    // @Override
-    // public String toString() {
-    // return trackerId + " | lat: " + latitude + " lon: " + longitude + " alt: " +
-    // altitude;
-    // }
 }

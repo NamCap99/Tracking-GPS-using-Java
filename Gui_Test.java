@@ -22,9 +22,8 @@ public class Gui_Test {
 
     @Before
     public void setUp() {
-        // Initialize GpsGUI with mock or real components as necessary
-        GpsGUI.setTestMode(true);
         gpsGUI = new GpsGUI();
+        gpsGUI.initializeComponents(); // Initializes components for testing
     }
 
     @Test
@@ -91,28 +90,27 @@ public class Gui_Test {
             String trackerId = "Tracker" + i;
             // Directly create a GpsEvent with deterministic data.
             GpsEvent simulatedEvent = new GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
-            
+
             // Invoke the method that updates the GUI with the simulated event.
             // This method needs to be implemented in GpsGUI.
             gpsGUI.updateTrackerDisplay(simulatedEvent);
-            
+
             // Retrieve the label for this tracker.
             JLabel trackerLabel = gpsGUI.getTrackerLabel(trackerId);
-            
+
             // Check if the tracker label was updated with the simulated data.
             // The format here should match the format used in updateTrackerDisplay.
             String expectedText = String.format("Tracker%s: Lat %.1f, Lon %.1f, Alt %.1f meters",
-                                 trackerId, simulatedEvent.getLatitude(), simulatedEvent.getLongitude(),
-                                 simulatedEvent.getAltitude());
+                    trackerId, simulatedEvent.getLatitude(), simulatedEvent.getLongitude(),
+                    simulatedEvent.getAltitude());
             assertEquals("Tracker label should display the correct coordinates.",
-                         expectedText, trackerLabel.getText());
+                    expectedText, trackerLabel.getText());
         }
     }
-    
+
     @After
     public void tearDown() {
         // Clean up the FRP environment if needed
         GpsGUI.cleanup(); // Implement cleanup method in GpsGUI if necessary
-        GpsGUI.setTestMode(false); // Reset the test mode.
     }
 }

@@ -31,9 +31,7 @@ public class GpsGUI {
     // Initialize event display label in static context
     // private static JLabel eventDisplayLabel = new JLabel("No data");
 
-    public GpsGUI() {
-        createAndShowGUI(); // Pass false to indicate not to show the GUI
-    }
+    // In your GpsGUI constructor or initialization block
 
     public static void setTestMode(boolean testMode) {
         isTestMode = testMode;
@@ -43,38 +41,6 @@ public class GpsGUI {
         GpsEvent event = new GpsEvent(trackerId, latitude, longitude, altitude);
         processNewGpsEvent(event); // Assuming this method handles the new event
     }
-
-    // Assuming you have a class GpsEvent with the required methods
-    // public static class GpsEvent {
-    // public final String trackerId;
-    // public final double latitude;
-    // public final double longitude;
-    // public final double altitude;
-
-    // public GpsEvent(String trackerId, double latitude, double longitude, double
-    // altitude) {
-    // this.trackerId = trackerId;
-    // this.latitude = latitude;
-    // this.longitude = longitude;
-    // this.altitude = altitude;
-    // }
-
-    // public String getTrackerId() {
-    // return trackerId;
-    // }
-
-    // public double getLatitude() {
-    // return latitude;
-    // }
-
-    // public double getLongitude() {
-    // return longitude;
-    // }
-
-    // public double getAltitude() {
-    // return altitude;
-    // }
-    // }
 
     public JFrame getFrame() {
         return frame;
@@ -155,6 +121,36 @@ public class GpsGUI {
         setupPeriodicTasks();
     }
 
+    public GpsGUI() {
+        initializeComponents(); // Initialize components but do not show the GUI
+        if (!isTestMode) {
+            showGUI(); // Only display the GUI if not in test mode
+        }
+    }
+
+    public void initializeComponents() {
+        frame = new JFrame("GPS Tracker");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        trackerPanel = createTrackerPanel();
+        inputPanel = createInputPanel();
+        combinedDataDisplay = createCombinedDataDisplay();
+
+        frame.add(trackerPanel, BorderLayout.NORTH);
+        frame.add(inputPanel, BorderLayout.CENTER);
+        frame.add(combinedDataDisplay, BorderLayout.SOUTH);
+
+        frame.pack();
+        frame.setSize(600, 600);
+        // Do not call frame.setVisible here; that's handled in showGUI()
+    }
+
+    private void showGUI() {
+        // Make the frame visible, should be called outside of testing context
+        frame.setVisible(true);
+    }
+
     public static void createAndShowGUI() {
         frame = new JFrame("GPS Tracker");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -170,9 +166,6 @@ public class GpsGUI {
 
         frame.pack();
         frame.setSize(600, 600);
-        if (!isTestMode) {
-            frame.setVisible(true); // Only make the frame visible if not in test mode
-        }
     }
 
     private static void setupTrackerStreams() {
@@ -184,7 +177,7 @@ public class GpsGUI {
             trackerCells.put(trackerId, cell);
 
             // Set up the GUI to react to changes in the cell.
-            cell.listen(event -> updateTrackerDisplay(event));
+            cell.listen(event -> SwingUtilities.invokeLater(() -> updateTrackerDisplay(event)));
         }
     }
 
@@ -394,6 +387,9 @@ public class GpsGUI {
         StreamSink<GpsEvent> streamSink = trackerStreams.get(newEvent.getTrackerId());
         if (streamSink != null) {
             streamSink.send(newEvent);
+        } else {
+            // Handle the case where there is no StreamSink for this tracker ID
+            System.err.println("No StreamSink found for tracker ID: " + newEvent);
         }
     }
 
