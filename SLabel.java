@@ -1,33 +1,24 @@
 import nz.sodium.*;
 import javax.swing.*;
-import javax.swing.SwingUtilities;
-import java.util.concurrent.ArrayBlockingQueue;
 
-public class SLabel extends JLabel{
-    
+public class SLabel extends JLabel {
+
+    private final Listener listener;
+
     public SLabel(Cell<String> text) {
-        super("");
-        l = Operational.updates(text).listen(t -> {
-            if (SwingUtilities.isEventDispatchThread())
-                setText(t);
-            else
-                SwingUtilities.invokeLater(() -> {
-                    setText(t);
-                });
+        // Initially set the text to the current value of the cell
+        super(text.sample());
+        // Listen for updates to the cell
+        this.listener = text.listen(t -> {
+            // Make sure UI updates happen on the Event Dispatch Thread
+            SwingUtilities.invokeLater(() -> setText(t));
         });
-        // Set the text at the end of the transaction so SLabel works
-        // with CellLoops.
-        Transaction.post(
-            () -> SwingUtilities.invokeLater(() -> {
-                setText(text.sample());
-            })
-        );
     }
 
-    private final Listener l;
-
+    @Override
     public void removeNotify() {
-        l.unlisten();
+        // Unlisten to the cell when the label is removed from the UI
+        listener.unlisten();
         super.removeNotify();
     }
 }
