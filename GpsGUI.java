@@ -25,7 +25,6 @@ public class GpsGUI {
     private static boolean isTestMode = false; // Default to not being in test mode
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
-
     static final int numberOfTrackers = 10; // Example number of trackers
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
@@ -40,9 +39,9 @@ public class GpsGUI {
         isTestMode = testMode;
     }
 
-    public static void processNewData(String trackerId, double lat, double lon, double alt) {
-        GpsEvent newEvent = new GpsEvent(trackerId, lat, lon, alt);
-        processNewGpsEvent(newEvent); // Assuming this method handles the new event
+    public static void processNewData(String trackerId, double latitude, double longitude, double altitude) {
+        GpsEvent event = new GpsEvent(trackerId, latitude, longitude, altitude);
+        processNewGpsEvent(event); // Assuming this method handles the new event
     }
 
     // Assuming you have a class GpsEvent with the required methods
