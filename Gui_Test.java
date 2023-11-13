@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.awt.EventQueue;
+import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
 
 import org.junit.After;
@@ -23,8 +24,11 @@ public class Gui_Test {
     @Before
     public void setUp() {
         System.setProperty("java.awt.headless", "true");
-        GpsGUI.setTestMode(true);
-        gpsGUI = new GpsGUI();
+        if (!GraphicsEnvironment.isHeadless()) {
+            GpsGUI.setTestMode(true);
+            gpsGUI = new GpsGUI();
+            gpsGUI.initializeComponents();
+        }
     }
 
     @Test
