@@ -17,35 +17,19 @@ public class Gui_Test {
     private GpsGUI gpsGUI; // Assume GpsGUI is your main GUI class
     private boolean isHeadless;
 
-    // @Before
-    // public void setUp() {
-    //     System.setProperty("java.awt.headless", "true");
-    //     // Ensure that we are in headless mode
-    //     GpsGUI.setTestMode(true);
-    //     gpsGUI = new GpsGUI();
-    //     // Initialize the components if not in headless environment
-    //     if (!GraphicsEnvironment.isHeadless()) {
-    //         gpsGUI.initializeComponents();
-    //     } else {
-    //         // Mock the GUI components when in headless mode
-    //         gpsGUI.mockComponents();
-    //     }
-    //     // Populate tracker labels for the tests
-    //     GpsGUI.setupTrackerStreams();
-    // }
     @Before
     public void setUp() {
         isHeadless = GraphicsEnvironment.isHeadless();
         if (!isHeadless) {
             SwingUtilities.invokeLater(() -> {
                 gpsGUI = new GpsGUI();
-                // Initialize GUI components specific to your application here
                 gpsGUI.initializeComponents();
             });
         } else {
             // Setup for headless mode
-            gpsGUI = new GpsGUI(); // Assuming GpsGUI can be initialized in headless mode
-            gpsGUI.mockComponents(); // If mockComponents method exists
+            System.setProperty("java.awt.headless", "true");
+            gpsGUI = new GpsGUI(); // Create a GpsGUI instance without GUI initialization
+            gpsGUI.mockComponents(); // Make sure this method does not instantiate actual GUI components
         }
     }
 
@@ -113,18 +97,22 @@ public class Gui_Test {
     
     @Test
     public void testTrackerDisplays() {
-        for (int i = 1; i <= 10; i++) {
-            String trackerId = "Tracker" + i;
-            JLabel initialLabel = gpsGUI.getTrackerLabel(trackerId);
-            assertNotNull("Label for tracker should not be null", initialLabel);
-            assertEquals("Initial text should show 0 meters", trackerId + ": Distance 0 meters", initialLabel.getText());
-    
-            GpsGUI.GpsEvent simulatedEvent = new GpsGUI.GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
-            processGpsEventInSwingThread(simulatedEvent);
-    
-            JLabel updatedLabel = gpsGUI.getTrackerLabel(trackerId);
-            String expectedDisplay = String.format("Tracker%s: Lat %.1f, Lon %.1f", trackerId, 50.0 + i, 10.0 + i);
-            assertEquals("Tracker display should be updated with simulated event data", expectedDisplay, updatedLabel.getText());
+        if (!isHeadless) {
+            runTest(() -> {
+                for (int i = 1; i <= 10; i++) {
+                    String trackerId = "Tracker" + i;
+                    JLabel initialLabel = gpsGUI.getTrackerLabel(trackerId);
+                    assertNotNull("Label for tracker should not be null", initialLabel);
+                    assertEquals("Initial text should show 0 meters", trackerId + ": Distance 0 meters", initialLabel.getText());
+            
+                    GpsGUI.GpsEvent simulatedEvent = new GpsGUI.GpsEvent(trackerId, 50.0 + i, 10.0 + i, 100.0 + i);
+                    processGpsEventInSwingThread(simulatedEvent);
+            
+                    JLabel updatedLabel = gpsGUI.getTrackerLabel(trackerId);
+                    String expectedDisplay = String.format("Tracker%s: Lat %.1f, Lon %.1f", trackerId, 50.0 + i, 10.0 + i);
+                    assertEquals("Tracker display should be updated with simulated event data", expectedDisplay, updatedLabel.getText());
+                }
+            });
         }
     }
     
