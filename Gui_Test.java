@@ -58,6 +58,9 @@ public class Gui_Test {
         assertNotNull("Frame should not be null", gpsGUI.getFrame());
         assertNotNull("Tracker panel should not be null", gpsGUI.getTrackerPanel());
         assertNotNull("Input panel should not be null", gpsGUI.getInputPanel());
+        assertNotNull("Mock frame should not be null", gpsGUI.getFrame());
+        assertNotNull("Mock tracker panel should not be null", gpsGUI.getTrackerPanel());
+        assertNotNull("Mock input panel should not be null", gpsGUI.getInputPanel());
         // Add more assertions as needed for other components
     }
 
