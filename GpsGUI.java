@@ -2,7 +2,6 @@ import nz.sodium.*;
 import swidgets.*;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -183,7 +182,7 @@ public class GpsGUI {
         if (!GraphicsEnvironment.isHeadless() && !isTestMode) {
             initializeComponents();
             showGUI();
-                                    
+
         } else {
             mockComponents(); // Use mock components for tests or headless environment
         }
