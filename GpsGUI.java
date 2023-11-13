@@ -27,9 +27,9 @@ public class GpsGUI {
     private static Cell<Optional<Pair<Double, Double>>> currentFilter = new Cell<>(Optional.empty());
 
     private static boolean isTestMode = false; // Default to not being in test mode
-    private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
-    private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
-    static final int numberOfTrackers = 10; // Example number of trackers
+    private static final double LATITUDE_THRESHOLD = 0.01; // threshold value
+    private static final double LONGITUDE_THRESHOLD = 0.01; // threshold value
+    static final int numberOfTrackers = 10; // number of trackers
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
 
@@ -180,12 +180,11 @@ public class GpsGUI {
     }
 
     public GpsGUI() {
-        // Only initialize components if not in headless mode
-        if (!GraphicsEnvironment.isHeadless()) {
-            initializeComponents();
-            if (!isTestMode) {
-                showGUI(); // Only display the GUI if not in test mode
-            }
+        if (!GraphicsEnvironment.isHeadless() && !isTestMode) {
+            initializeComponents(); // Initialize components only if not in test mode and not in headless
+                                    // environment
+        } else {
+            mockComponents(); // Use mock components for tests or headless environment
         }
     }
 
@@ -346,8 +345,10 @@ public class GpsGUI {
                 // Filter the stream for events within the specified latitude and longitude
                 Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
                 Stream<GpsEvent> filteredStream = allEventsStream
-                        .filter(event -> Math.abs(event.getLatitude() - lat) < LATITUDE_THRESHOLD &&
-                                Math.abs(event.getLongitude() - lon) < LONGITUDE_THRESHOLD);
+                        .filter(event -> currentFilter.sample()
+                                .map(filter -> Math.abs(event.getLatitude() - filter.getFirst()) < LATITUDE_THRESHOLD &&
+                                        Math.abs(event.getLongitude() - filter.getSecond()) < LONGITUDE_THRESHOLD)
+                                .orElse(true));
 
                 // Update the combined data display with the filtered data
                 filteredStream
@@ -361,41 +362,6 @@ public class GpsGUI {
                 statusLabel.setText("Current filter: Invalid");
             }
         });
-    }
-
-    private static void simulateTestCases() {
-        // Test cases (latitude, longitude)
-        double[][] testCases = {
-                { 0.0, 0.0 }, // Equator and Prime Meridian
-                { 90.0, 0.0 }, // North Pole
-                { -90.0, 0.0 }, // South Pole
-                { 0.0, 180.0 }, // International Date Line, Equator
-                { 51.477928, -0.001545 }, // Greenwich Observatory
-                { 38.897676, -77.036530 }, // The White House, Washington D.C.
-                { 48.858844, 2.294351 }, // Eiffel Tower, Paris
-                { 35.689487, 139.691706 }, // Tokyo, Japan
-                { -22.906847, -43.172896 }, // Rio de Janeiro, Brazil
-                { 55.755826, 37.617300 } // Moscow, Russia
-        };
-
-        for (double[] testCase : testCases) {
-            String trackerId = "TestTracker";
-            double latitude = testCase[0];
-            double longitude = testCase[1];
-            double altitude = 0; // Assume sea level for testing
-
-            // Simulate a delay between receiving each event
-            Timer timer = new Timer(true);
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    // Create a new GPS event with the test data
-                    GpsEvent testEvent = new GpsEvent(trackerId, latitude, longitude, altitude);
-                    // Process the event as if it were received from the GPS service
-                    processGpsEvent(testEvent);
-                }
-            }, 1000 * Arrays.asList(testCases).indexOf(testCase)); // Delays for each test case
-        }
     }
 
     private static void setupPeriodicTasks() {
@@ -426,7 +392,7 @@ public class GpsGUI {
         return Math.round(distance);
     }
 
-    // Example of processing a new GPS event
+    // Processing a new GPS event
     public static void processGpsEvent(GpsEvent simulatedEvent) {
         SwingUtilities.invokeLater(() -> {
             String trackerId = simulatedEvent.getTrackerId();
@@ -493,13 +459,15 @@ public class GpsGUI {
     }
 
     public void mockComponents() {
-        // Create mock objects to avoid NullPointerException in headless mode
+        // Mock the frame and other components to avoid NullPointerException in tests
         frame = new JFrame();
         trackerPanel = new JPanel();
         inputPanel = new JPanel();
         combinedDataDisplay = new STextArea("");
+        eventDisplayLabel = new JLabel("No data");
+        filterStatusLabel = new JLabel("Current filter: None");
 
-        // Mock the JLabels for distance display
+        // Mock the JLabels for tracker display
         for (int i = 1; i <= numberOfTrackers; i++) {
             JLabel mockLabel = new JLabel("Tracker" + i + ": Distance 0 meters");
             trackerDistanceLabels.put("Tracker" + i, mockLabel);
