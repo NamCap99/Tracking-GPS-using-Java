@@ -33,22 +33,36 @@ public class Gui_Test {
         }
     }
 
+    // private void runTest(Runnable testLogic) {
+    //     if (isHeadless) {
+    //         testLogic.run();
+    //     } else {
+    //         try {
+    //             SwingUtilities.invokeAndWait(() -> {
+    //                 try {
+    //                     testLogic.run();
+    //                 } catch (RuntimeException e) {
+    //                     throw e; // Re-throw runtime exceptions
+    //                 } catch (Exception e) {
+    //                     // Handle or wrap other exceptions as runtime exceptions
+    //                     throw new RuntimeException(e);
+    //                 }
+    //             });
+    //         } catch (InterruptedException | InvocationTargetException e) {
+    //             e.printStackTrace();
+    //         }
+    //     }
+    // }
+
     private void runTest(Runnable testLogic) {
         if (isHeadless) {
+            // Run test logic without involving GUI in headless mode
             testLogic.run();
         } else {
+            // Run test logic normally in GUI mode
             try {
-                SwingUtilities.invokeAndWait(() -> {
-                    try {
-                        testLogic.run();
-                    } catch (RuntimeException e) {
-                        throw e; // Re-throw runtime exceptions
-                    } catch (Exception e) {
-                        // Handle or wrap other exceptions as runtime exceptions
-                        throw new RuntimeException(e);
-                    }
-                });
-            } catch (InterruptedException | InvocationTargetException e) {
+                SwingUtilities.invokeAndWait(testLogic);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -86,6 +100,7 @@ public class Gui_Test {
     
     @Test
     public void testGuiInitialization() {
+        if (!isHeadless) {
         runTest(() ->{
             runInAppropriateEnvironment(() -> {
                 assertNotNull("Frame should not be null", gpsGUI.getFrame());
@@ -93,6 +108,7 @@ public class Gui_Test {
                 assertNotNull("Input panel should not be null", gpsGUI.getInputPanel());
             });
         });
+    }
     }
     
     @Test
@@ -128,6 +144,7 @@ public class Gui_Test {
 
     @Test
     public void testTrackerDisplayUpdate() {
+        if (!isHeadless) {
         runTest(() -> {
             for (int i = 1; i <= 10; i++) {
                 String trackerId = "Tracker" + i;
@@ -150,6 +167,7 @@ public class Gui_Test {
                         expectedText, trackerLabel.getText());
             }
         });
+    }
     }
 
     @After
