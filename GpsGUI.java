@@ -180,29 +180,34 @@ public class GpsGUI {
     }
 
     public GpsGUI() {
-        initializeComponents(); // Initialize components but do not show the GUI
-        if (!isTestMode) {
-            showGUI(); // Only display the GUI if not in test mode
+        // Only initialize components if not in headless mode
+        if (!GraphicsEnvironment.isHeadless()) {
+            initializeComponents();
+            if (!isTestMode) {
+                showGUI(); // Only display the GUI if not in test mode
+            }
         }
     }
 
     public void initializeComponents() {
-        frame = new JFrame("GPS Tracker");
-        eventDisplayLabel = new JLabel("No data");
-        currentFilter = new CellLoop<>();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
+        if (!GraphicsEnvironment.isHeadless()) {
+            frame = new JFrame("GPS Tracker");
+            eventDisplayLabel = new JLabel("No data");
+            currentFilter = new CellLoop<>();
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setLayout(new BorderLayout());
 
-        trackerPanel = createTrackerPanel();
-        inputPanel = createInputPanel();
-        combinedDataDisplay = createCombinedDataDisplay();
+            trackerPanel = createTrackerPanel();
+            inputPanel = createInputPanel();
+            combinedDataDisplay = createCombinedDataDisplay();
 
-        frame.add(trackerPanel, BorderLayout.NORTH);
-        frame.add(inputPanel, BorderLayout.CENTER);
-        frame.add(combinedDataDisplay, BorderLayout.SOUTH);
+            frame.add(trackerPanel, BorderLayout.NORTH);
+            frame.add(inputPanel, BorderLayout.CENTER);
+            frame.add(combinedDataDisplay, BorderLayout.SOUTH);
 
-        frame.pack();
-        frame.setSize(600, 600);
+            frame.pack();
+            frame.setSize(600, 600);
+        }
     }
 
     private static void showGUI() {

@@ -23,25 +23,24 @@ public class Gui_Test {
 
     // @Before
     // public void setUp() {
+    // // Set to headless mode to avoid GUI components actually popping up during
+    // tests
     // System.setProperty("java.awt.headless", "true");
-    // if (!GraphicsEnvironment.isHeadless()) {
+    // // Set the test mode to true before initializing the GUI
     // GpsGUI.setTestMode(true);
+    // // Initialize the GUI components
     // gpsGUI = new GpsGUI();
     // gpsGUI.initializeComponents();
+    // // Populate tracker labels for the tests
+    // GpsGUI.setupTrackerStreams();
     // }
-    // }
-
     @Before
     public void setUp() {
-        // Set to headless mode to avoid GUI components actually popping up during tests
+        // Set headless property to true to avoid HeadlessException
         System.setProperty("java.awt.headless", "true");
-        // Set the test mode to true before initializing the GUI
-        GpsGUI.setTestMode(true);
-        // Initialize the GUI components
+        GpsGUI.setTestMode(true); // Ensure GUI does not attempt to display
         gpsGUI = new GpsGUI();
-        gpsGUI.initializeComponents();
-        // Populate tracker labels for the tests
-        GpsGUI.setupTrackerStreams();
+        // Do not call initializeComponents() as it attempts to create GUI elements
     }
 
     @Test
