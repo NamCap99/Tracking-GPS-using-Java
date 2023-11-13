@@ -18,7 +18,7 @@ public class Gui_Test {
 
     @Before
     public void setUp() {
-        System.setProperty("java.awt.headless", "true");
+        System.setProperty("java.awt.headless", "false");
         // Ensure that we are in headless mode
         GpsGUI.setTestMode(true);
         gpsGUI = new GpsGUI();
