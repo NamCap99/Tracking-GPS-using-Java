@@ -33,27 +33,6 @@ public class Gui_Test {
         }
     }
 
-    // private void runTest(Runnable testLogic) {
-    //     if (isHeadless) {
-    //         testLogic.run();
-    //     } else {
-    //         try {
-    //             SwingUtilities.invokeAndWait(() -> {
-    //                 try {
-    //                     testLogic.run();
-    //                 } catch (RuntimeException e) {
-    //                     throw e; // Re-throw runtime exceptions
-    //                 } catch (Exception e) {
-    //                     // Handle or wrap other exceptions as runtime exceptions
-    //                     throw new RuntimeException(e);
-    //                 }
-    //             });
-    //         } catch (InterruptedException | InvocationTargetException e) {
-    //             e.printStackTrace();
-    //         }
-    //     }
-    // }
-
     private void runTest(Runnable testLogic) {
         if (isHeadless) {
             // Run test logic without involving GUI in headless mode
@@ -141,7 +120,6 @@ public class Gui_Test {
         }
     }
     
-
     @Test
     public void testTrackerDisplayUpdate() {
         if (!isHeadless) {
