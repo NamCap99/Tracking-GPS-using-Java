@@ -1,46 +1,35 @@
 import org.junit.Assert;
 import org.junit.Test;
-
 import nz.sodium.Cell;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-
 import org.junit.Before;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
 import java.awt.EventQueue;
 import java.awt.GraphicsEnvironment;
 import java.lang.reflect.InvocationTargetException;
-
 import org.junit.After;
 
 public class Gui_Test {
     private GpsGUI gpsGUI; // Assume GpsGUI is your main GUI class
 
-    // @Before
-    // public void setUp() {
-    // // Set to headless mode to avoid GUI components actually popping up during
-    // tests
-    // System.setProperty("java.awt.headless", "true");
-    // // Set the test mode to true before initializing the GUI
-    // GpsGUI.setTestMode(true);
-    // // Initialize the GUI components
-    // gpsGUI = new GpsGUI();
-    // gpsGUI.initializeComponents();
-    // // Populate tracker labels for the tests
-    // GpsGUI.setupTrackerStreams();
-    // }
     @Before
     public void setUp() {
-        // Set headless property to true to avoid HeadlessException
-        System.setProperty("java.awt.headless", "true");
-        GpsGUI.setTestMode(true); // Ensure GUI does not attempt to display
+        // Ensure that we are in headless mode
+        GpsGUI.setTestMode(true);
         gpsGUI = new GpsGUI();
-        // Do not call initializeComponents() as it attempts to create GUI elements
+        // Initialize the components if not in headless environment
+        if (!GraphicsEnvironment.isHeadless()) {
+            gpsGUI.initializeComponents();
+        } else {
+            // Mock the GUI components when in headless mode
+            gpsGUI.mockComponents();
+        }
+        // Populate tracker labels for the tests
+        GpsGUI.setupTrackerStreams();
     }
 
     @Test

@@ -492,12 +492,32 @@ public class GpsGUI {
         });
     }
 
+    public void mockComponents() {
+        // Create mock objects to avoid NullPointerException in headless mode
+        frame = new JFrame();
+        trackerPanel = new JPanel();
+        inputPanel = new JPanel();
+        combinedDataDisplay = new STextArea("");
+
+        // Mock the JLabels for distance display
+        for (int i = 1; i <= numberOfTrackers; i++) {
+            JLabel mockLabel = new JLabel("Tracker" + i + ": Distance 0 meters");
+            trackerDistanceLabels.put("Tracker" + i, mockLabel);
+        }
+    }
+
     // Method to clean up after tests
     public static void cleanup() {
         // Dispose of the frame
         if (frame != null) {
             frame.dispose();
         }
+        // Clear all mock components
+        trackerDistanceLabels.clear();
+        lastKnownPositions.clear();
+        trackerDistances.clear();
+        trackerCells.clear();
+        trackerStreams.clear();
     }
 
     // Getter for tracker labels if needed for tests
