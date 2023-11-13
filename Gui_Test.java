@@ -84,16 +84,6 @@ public class Gui_Test {
         }
     }
 
-    // Simulate the tracker data synchronously for testing purposes.
-    private Cell<GpsEvent> simulateTrackerData(String trackerId) {
-        // Synchronously generate a GpsEvent with test data.
-        double latitude = Math.random() * 180 - 90; // Random latitude between -90 and 90
-        double longitude = Math.random() * 360 - 180; // Random longitude between -180 and 180
-        double altitude = Math.random() * 1000; // Random altitude up to 1000
-        GpsEvent simulatedEvent = new GpsEvent(trackerId, latitude, longitude, altitude);
-        return new Cell<>(simulatedEvent);
-    }
-
     @Test
     public void testTrackerDisplayUpdate() {
         for (int i = 1; i <= 10; i++) {

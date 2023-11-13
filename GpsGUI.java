@@ -181,8 +181,9 @@ public class GpsGUI {
 
     public GpsGUI() {
         if (!GraphicsEnvironment.isHeadless() && !isTestMode) {
-            initializeComponents(); // Initialize components only if not in test mode and not in headless
-                                    // environment
+            initializeComponents();
+            showGUI();
+                                    
         } else {
             mockComponents(); // Use mock components for tests or headless environment
         }
