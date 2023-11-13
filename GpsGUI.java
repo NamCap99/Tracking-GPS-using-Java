@@ -25,7 +25,6 @@ public class GpsGUI {
     protected static JPanel inputPanel;
     private static JLabel eventDisplayLabel;
     private static Cell<Optional<Pair<Double, Double>>> currentFilter = new Cell<>(Optional.empty());
-    
 
     private static boolean isTestMode = false; // Default to not being in test mode
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
@@ -444,6 +443,9 @@ public class GpsGUI {
                 trackerDistances.put(trackerId, 0.0);
                 lastKnownPositions.put(trackerId, simulatedEvent);
             }
+
+            // Update the tracker display label
+            updateTrackerDisplay(simulatedEvent);
         });
     }
 
