@@ -21,14 +21,27 @@ import org.junit.After;
 public class Gui_Test {
     private GpsGUI gpsGUI; // Assume GpsGUI is your main GUI class
 
+    // @Before
+    // public void setUp() {
+    // System.setProperty("java.awt.headless", "true");
+    // if (!GraphicsEnvironment.isHeadless()) {
+    // GpsGUI.setTestMode(true);
+    // gpsGUI = new GpsGUI();
+    // gpsGUI.initializeComponents();
+    // }
+    // }
+
     @Before
     public void setUp() {
+        // Set to headless mode to avoid GUI components actually popping up during tests
         System.setProperty("java.awt.headless", "true");
-        if (!GraphicsEnvironment.isHeadless()) {
-            GpsGUI.setTestMode(true);
-            gpsGUI = new GpsGUI();
-            gpsGUI.initializeComponents();
-        }
+        // Set the test mode to true before initializing the GUI
+        GpsGUI.setTestMode(true);
+        // Initialize the GUI components
+        gpsGUI = new GpsGUI();
+        gpsGUI.initializeComponents();
+        // Populate tracker labels for the tests
+        GpsGUI.setupTrackerStreams();
     }
 
     @Test
