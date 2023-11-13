@@ -26,4 +26,10 @@ public class GpsEvent {
     public double getAltitude() {
         return altitude;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Tracker ID: %s, Latitude: %.6f, Longitude: %.6f, Altitude: %.2f",
+                trackerId, latitude, longitude, altitude);
+    }
 }

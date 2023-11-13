@@ -5,6 +5,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -22,14 +23,16 @@ public class GpsGUI {
     protected static JFrame frame;
     protected static JPanel trackerPanel;
     protected static JPanel inputPanel;
+    private static JLabel eventDisplayLabel;
+    private static Cell<Optional<Pair<Double, Double>>> currentFilter = new Cell<>(Optional.empty());
+    
+
     private static boolean isTestMode = false; // Default to not being in test mode
     private static final double LATITUDE_THRESHOLD = 0.01; // Example threshold value
     private static final double LONGITUDE_THRESHOLD = 0.01; // Example threshold value
     static final int numberOfTrackers = 10; // Example number of trackers
     private static STextArea combinedDataDisplay;
     private static JLabel filterStatusLabel;
-    // Initialize event display label in static context
-    // private static JLabel eventDisplayLabel = new JLabel("No data");
 
     // Assuming you have a class GpsEvent with the required methods
     public static class GpsEvent {
@@ -60,6 +63,12 @@ public class GpsGUI {
         public double getAltitude() {
             return altitude;
         }
+
+        @Override
+        public String toString() {
+            return String.format("Tracker ID: %s, Latitude: %.6f, Longitude: %.6f, Altitude: %.2f",
+                    trackerId, latitude, longitude, altitude);
+        }
     }
 
     // In your GpsGUI constructor or initialization block
@@ -88,25 +97,14 @@ public class GpsGUI {
         return inputPanel;
     }
 
-    // private static Stream<GpsEvent> combineAllTrackerStreams() {
-    // StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
-    // Timer timer = new Timer(true); // true to make it a daemon thread
-    // timer.schedule(new TimerTask() {
-    // int counter = 0;
-
-    // public void run() {
-    // // Simulating a new event for a different tracker
-    // String trackerId = "Tracker " + (counter % 10 + 1);
-    // Cell<GpsEvent> simulatedData = simulateTrackerData(trackerId);
-    // allEventsSink.send(simulatedData.sample());
-    // counter++;
-    // }
-    // }, 0, 1000); // Emit an event every second
-    // return allEventsSink;
-    // }
-
     private static Stream<GpsEvent> combineAllTrackerStreams() {
         StreamSink<GpsEvent> allEventsSink = new StreamSink<>();
+        // Stream<GpsEvent> filteredStream = allEventsStream.filter(event ->
+        // currentFilter.sample().map(filter ->
+        // Math.abs(event.getLatitude() - filter.getFirst()) < LATITUDE_THRESHOLD &&
+        // Math.abs(event.getLongitude() - filter.getSecond()) < LONGITUDE_THRESHOLD
+        // ).orElse(true)
+        // );
         Timer timer = new Timer(true); // true to make it a daemon thread
         timer.schedule(new TimerTask() {
             int counter = 0;
@@ -191,6 +189,8 @@ public class GpsGUI {
 
     public void initializeComponents() {
         frame = new JFrame("GPS Tracker");
+        eventDisplayLabel = new JLabel("No data");
+        currentFilter = new CellLoop<>();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
@@ -242,6 +242,14 @@ public class GpsGUI {
                 System.out.println("Received update for " + event.getTrackerId() + ": " + event); // Add this line to
                                                                                                   // debug
                 SwingUtilities.invokeLater(() -> updateTrackerDisplay(event));
+                eventDisplayLabel.setText(event.toString()); // Make sure to implement toString in GpsEvent
+                // Clear the event display label after 3 seconds
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        SwingUtilities.invokeLater(() -> eventDisplayLabel.setText("No data"));
+                    }
+                }, 3000);
             });
             simulateTrackerData(trackerId, streamSink);
         }
@@ -315,6 +323,7 @@ public class GpsGUI {
         applyButton.sClicked.listen(ignored -> {
             String latStr = latitudeField.text.sample().trim();
             String lonStr = longitudeField.text.sample().trim();
+            filterStatusLabel.setText("Current filter: Lat " + latStr + ", Lon " + lonStr);
             try {
                 double lat = Double.parseDouble(latStr);
                 double lon = Double.parseDouble(lonStr);
@@ -327,8 +336,8 @@ public class GpsGUI {
                     return; // Exit the method if the input is invalid
                 }
 
-                // If the input is valid, update the filter status label and apply the filter
                 filterStatusLabel.setText("Current filter: Lat " + lat + ", Lon " + lon);
+                currentFilter = new Cell<>(Optional.of(new Pair<>(lat, lon)));
 
                 // Filter the stream for events within the specified latitude and longitude
                 Stream<GpsEvent> allEventsStream = combineAllTrackerStreams();
@@ -457,19 +466,6 @@ public class GpsGUI {
             System.err.println("No StreamSink found for tracker ID: " + newEvent);
         }
     }
-
-    // public static void updateTrackerDisplay(GpsEvent simulatedEvent) {
-    // SwingUtilities.invokeLater(() -> {
-    // JLabel trackerLabel = getTrackerLabel(simulatedEvent.getTrackerId());
-    // if (trackerLabel != null) {
-    // // Update the label with the latest event data.
-    // String labelText = String.format("Tracker %s: Lat %.8f, Lon %.8f",
-    // simulatedEvent.getTrackerId(), simulatedEvent.getLatitude(),
-    // simulatedEvent.getLongitude());
-    // trackerLabel.setText(labelText);
-    // }
-    // });
-    // }
 
     public static void updateTrackerDisplay(GpsEvent event) {
         SwingUtilities.invokeLater(() -> {
